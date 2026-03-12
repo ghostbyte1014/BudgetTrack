@@ -62,6 +62,7 @@ interface BudgetContextType {
   totalSpentThisMonth: number;
   totalFixedCosts: number;
   dailySpendable: number;
+  dailySpendableProjection: number[];
   carryOverFromLastMonth: number;
   projectedCarryOver: number;
   financialMode: 'sunny' | 'overcast' | 'stormy' | 'recovery';
@@ -345,6 +346,13 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
   const dailySpendable = Math.max(0, absoluteBalance / daysRemaining);
   const currentDeficit = absoluteBalance < 0 ? Math.abs(absoluteBalance) : 0;
 
+  // Calculate 5-day projection if no spending occurs starting today
+  const dailySpendableProjection = Array.from({ length: 5 }, (_, i) => {
+    const projectedDaysRemaining = daysRemaining - (i + 1);
+    if (projectedDaysRemaining < 1) return 0;
+    return Math.max(0, absoluteBalance / projectedDaysRemaining);
+  });
+
   const projectedCarryOver = currentMonthPool;
   const financialMode = currentDeficit > 0 ? 'recovery' : 'sunny';
   const deficitTotal = currentDeficit;
@@ -385,6 +393,7 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
         totalSpentThisMonth,
         totalFixedCosts,
         dailySpendable,
+        dailySpendableProjection,
         carryOverFromLastMonth,
         projectedCarryOver,
         financialMode,

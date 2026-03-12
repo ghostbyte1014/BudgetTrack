@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { TrendingUp, Calendar, DollarSign, Lock, Calculator } from 'lucide-react';
+import { TrendingUp, Calendar, DollarSign, Lock, Calculator, Zap } from 'lucide-react';
 
 export function HowItWorks() {
   return (
@@ -23,49 +23,49 @@ export function HowItWorks() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-3">
-            <div className="flex items-start gap-3 p-4 bg-[#09090b] rounded-lg">
+            <div className="flex flex-col sm:flex-row items-start gap-4 p-4 bg-[#09090b] rounded-lg border border-zinc-800/50">
               <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
                 <span className="text-blue-500 font-bold">1</span>
               </div>
-              <div>
+              <div className="min-w-0">
                 <h4 className="text-white font-medium mb-1">Opening Balance</h4>
-                <p className="text-sm text-zinc-400">
+                <p className="text-sm text-zinc-400 leading-relaxed">
                   Every month starts with your <strong className="text-white">Base Budget</strong> plus any 
                   surplus or minus any deficit from the previous month.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 bg-[#09090b] rounded-lg">
+            <div className="flex flex-col sm:flex-row items-start gap-4 p-4 bg-[#09090b] rounded-lg border border-zinc-800/50">
               <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
                 <span className="text-blue-500 font-bold">2</span>
               </div>
-              <div>
+              <div className="min-w-0">
                 <h4 className="text-white font-medium mb-1">Monthly Calculation</h4>
-                <p className="text-sm text-zinc-400">
+                <p className="text-sm text-zinc-400 leading-relaxed">
                   At the end of each month, we calculate: <br />
-                  <code className="text-emerald-500 text-xs mt-1 block">
+                  <code className="text-emerald-500 text-xs mt-1 block bg-emerald-500/5 p-1 rounded">
                     Net Result = Total Pool - Fixed Costs - Expenses
                   </code>
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 bg-[#09090b] rounded-lg">
+            <div className="flex flex-col sm:flex-row items-start gap-4 p-4 bg-[#09090b] rounded-lg border border-zinc-800/50">
               <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
                 <span className="text-blue-500 font-bold">3</span>
               </div>
-              <div>
+              <div className="min-w-0">
                 <h4 className="text-white font-medium mb-1">Carry-Over</h4>
-                <p className="text-sm text-zinc-400">
+                <p className="text-sm text-zinc-400 mb-3 leading-relaxed">
                   The Net Result (positive or negative) carries forward to next month's opening balance.
                 </p>
-                <div className="flex gap-2 mt-2">
-                  <Badge variant="outline" className="border-emerald-500/50 text-emerald-500 text-xs">
-                    Positive = More to spend
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="outline" className="border-emerald-500/50 text-emerald-500 text-[10px] py-0.5">
+                    Positive = More tomorrow
                   </Badge>
-                  <Badge variant="outline" className="border-rose-500/50 text-rose-500 text-xs">
-                    Negative = Less to spend
+                  <Badge variant="outline" className="border-rose-500/50 text-rose-500 text-[10px] py-0.5">
+                    Negative = Less tomorrow
                   </Badge>
                 </div>
               </div>
@@ -86,16 +86,16 @@ export function HowItWorks() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 p-6 rounded-lg border border-zinc-700">
-            <p className="text-center text-2xl text-white font-mono mb-4">
-              Daily Spendable = <span className="text-emerald-500">(Monthly Pool - Fixed Costs - Spent)</span> / Days Remaining
+          <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 p-4 sm:p-6 rounded-lg border border-zinc-700 overflow-x-auto">
+            <p className="text-center text-lg sm:text-2xl text-white font-mono mb-2 whitespace-nowrap">
+              Daily Limit = <span className="text-emerald-500">Remaining Pool</span> / Days Left
             </p>
-            <p className="text-sm text-zinc-400 text-center">
-              This ensures you're always spending at a sustainable pace
+            <p className="text-xs text-zinc-500 text-center">
+              *Remaining Pool = Total Balance - Unpaid Fixed Costs
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="p-4 bg-[#09090b] rounded-lg border border-zinc-800">
               <div className="flex items-center gap-2 mb-2">
                 <DollarSign className="w-4 h-4 text-blue-500" />
@@ -116,7 +116,7 @@ export function HowItWorks() {
               </p>
             </div>
 
-            <div className="p-4 bg-[#09090b] rounded-lg border border-zinc-800">
+            <div className="p-4 bg-[#09090b] rounded-lg border border-zinc-800 sm:col-span-2 lg:col-span-1">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-4 h-4 text-emerald-500" />
                 <h4 className="text-white font-medium text-sm">Days Remaining</h4>
@@ -124,6 +124,66 @@ export function HowItWorks() {
               <p className="text-xs text-zinc-400">
                 How many days left in the current month
               </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* The "No Spend" Benefit logic */}
+      <Card className="bg-gradient-to-br from-emerald-900/20 to-emerald-800/20 border-emerald-700/50">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-emerald-500" />
+            The "No Spend" Benefit
+          </CardTitle>
+          <CardDescription className="text-zinc-400">
+            How your daily limit grows when you save today
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-zinc-400">
+            Every peso you don't spend today is redistributed across your <strong className="text-white">remaining</strong> days. 
+            This means your daily allowance permanently increases for the rest of the month.
+          </p>
+          <div className="bg-[#09090b] p-4 rounded-lg border border-zinc-800 space-y-3">
+            <h4 className="text-white font-medium text-sm">The Logic:</h4>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs">
+                <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 font-bold">1</div>
+                <p className="text-zinc-300">Save ₱100 today.</p>
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 font-bold">2</div>
+                <p className="text-zinc-300">If you have 10 days left, that ₱100 is split 10 ways.</p>
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 font-bold">3</div>
+                <p className="text-zinc-400">Your daily limit <strong className="text-emerald-500">increases by ₱10</strong> for every remaining day!</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg space-y-2">
+            <h4 className="text-white font-medium text-sm flex items-center gap-2">
+              <Zap className="w-4 h-4 text-emerald-500" />
+              Example: No Spend Benefit
+            </h4>
+            <div className="space-y-1 text-sm">
+              <p className="text-zinc-400 italic">"I have ₱1,000 left and 5 days to go..."</p>
+              <div className="mt-2 space-y-2">
+                <div className="flex justify-between border-b border-white/10 pb-1">
+                  <span className="text-zinc-500">Normal Daily Limit:</span>
+                  <span className="text-white font-medium">₱200 / day</span>
+                </div>
+                <p className="text-emerald-500 text-xs font-medium">✨ You spend ₱0 today!</p>
+                <div className="flex justify-between pt-1">
+                  <span className="text-zinc-500">Tomorrow's New Limit:</span>
+                  <span className="text-white font-bold text-lg">₱250 / day</span>
+                </div>
+                <p className="text-zinc-400 text-[10px]">
+                  (₱1,000 balance / 4 remaining days = ₱250)
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>

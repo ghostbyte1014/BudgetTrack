@@ -23,7 +23,9 @@ export function Analytics() {
   const monthEnd = endOfMonth(today);
   const daysInMonth = differenceInDays(monthEnd, monthStart) + 1;
   const totalBudget = (metrics?.absolute_balance ?? 0) + totalSpentThisMonth + totalFixedCosts;
-  const dailyIdealSpend = totalBudget / daysInMonth;
+  // Ideal spending only targets the variable budget (Total Pool - Fixed Costs)
+  const variableBudget = totalBudget - totalFixedCosts;
+  const dailyIdealSpend = variableBudget / daysInMonth;
 
   // Generate data for the burn-down chart
   const chartData = eachDayOfInterval({ start: monthStart, end: today }).map(date => {
@@ -98,6 +100,9 @@ export function Analytics() {
                 <p className="text-xs text-zinc-500 mt-1">
                   Target: ₱{dailyIdealSpend.toFixed(2)}/day
                 </p>
+                <p className="text-[10px] text-zinc-600 mt-2 italic">
+                  *Excludes fixed costs (₱{totalFixedCosts.toLocaleString()})
+                </p>
               </div>
               <Badge 
                 variant="outline"
@@ -161,7 +166,7 @@ export function Analytics() {
         <CardHeader>
           <CardTitle className="text-white">Actual vs Ideal Spending Path</CardTitle>
           <CardDescription className="text-zinc-400">
-            Track your spending against the optimal pace for your budget
+            Pacing for variable spending (Base Budget - Fixed Costs)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -297,7 +302,7 @@ export function Analytics() {
               <div>
                 <p className="text-white font-medium text-sm">Spending Above Target</p>
                 <p className="text-sm text-zinc-400 mt-1">
-                  You're spending ${(actualDailyBurn - dailyIdealSpend).toFixed(2)} more per day than your ideal rate. 
+                  You're spending ₱{(actualDailyBurn - dailyIdealSpend).toFixed(2)} more per day than your ideal rate. 
                   Consider reducing discretionary expenses to stay on track.
                 </p>
               </div>
@@ -310,7 +315,7 @@ export function Analytics() {
               <div>
                 <p className="text-white font-medium text-sm">Great Job!</p>
                 <p className="text-sm text-zinc-400 mt-1">
-                  You're on track to carry over ${projectedCarryOver.toFixed(0)} to next month. 
+                  You're on track to carry over ₱{projectedCarryOver.toFixed(0)} to next month. 
                   Keep up the good work!
                 </p>
               </div>
@@ -324,7 +329,7 @@ export function Analytics() {
                 <p className="text-white font-medium text-sm">Top Spending Category</p>
                 <p className="text-sm text-zinc-400 mt-1">
                   <span className="text-white font-medium">{categoryChartData[0].category}</span> accounts for{' '}
-                  {categoryChartData[0].percentage}% of your spending (${categoryChartData[0].amount.toFixed(2)}).
+                  {categoryChartData[0].percentage}% of your spending (₱{categoryChartData[0].amount.toFixed(2)}).
                 </p>
               </div>
             </div>

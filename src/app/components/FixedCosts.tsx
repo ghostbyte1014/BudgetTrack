@@ -211,19 +211,19 @@ export function FixedCosts() {
                 .map((cost) => (
                   <div
                     key={cost.id}
-                    className="flex items-center justify-between p-4 bg-[#09090b] rounded-lg border border-zinc-800 hover:border-zinc-700 transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-[#09090b] rounded-lg border border-zinc-800 hover:border-zinc-700 transition-colors gap-4"
                   >
                     <div className="flex items-center gap-4 flex-1">
-                      <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center">
+                      <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
                         <Lock className="w-5 h-5 text-orange-500" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-white font-medium truncate">{cost.name}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="outline" className="text-xs border-zinc-700 text-zinc-400">
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                          <Badge variant="outline" className="text-[10px] border-zinc-700 text-zinc-400">
                             {cost.category}
                           </Badge>
-                          <div className="flex items-center gap-1 text-xs text-zinc-500">
+                          <div className="flex items-center gap-1 text-[10px] text-zinc-500">
                             <Calendar className="w-3 h-3" />
                             <span>
                               Due: {cost.dueDate}
@@ -233,7 +233,7 @@ export function FixedCosts() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 border-zinc-800/50 pt-3 sm:pt-0">
                       <p className="text-lg font-bold text-orange-500">
                         ₱{cost.amount.toFixed(2)}
                       </p>
@@ -241,7 +241,7 @@ export function FixedCosts() {
                         variant="ghost"
                         size="sm"
                         onClick={() => deleteFixedCost(cost.id)}
-                        className="text-zinc-400 hover:text-rose-500"
+                        className="text-zinc-400 hover:text-rose-500 h-8 w-8 p-0"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>

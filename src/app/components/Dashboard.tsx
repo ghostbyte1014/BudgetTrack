@@ -5,6 +5,7 @@ import { Badge } from './ui/badge';
 import { TrendingUp, TrendingDown, DollarSign, Calendar, Zap, Bell } from 'lucide-react';
 import { format } from 'date-fns';
 import { SettingsDialog } from './SettingsDialog';
+import { BudgetProjection } from './BudgetProjection';
 
 export function Dashboard() {
   const {
@@ -162,6 +163,9 @@ export function Dashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Budget Projection Section */}
+      <BudgetProjection />
 
       {/* Month at a Glance */}
       <Card className="bg-[#18181b] border-zinc-800">

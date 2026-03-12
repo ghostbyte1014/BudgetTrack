@@ -110,7 +110,7 @@ export function ProfilePage() {
               <div className="space-y-2">
                 <Label htmlFor="baseBalance" className="text-zinc-200 flex items-center gap-2">
                   <Wallet className="w-4 h-4 text-emerald-500" />
-                  Monthly Base Budget ($)
+                  Monthly Base Budget (₱)
                 </Label>
                 <Input
                   id="baseBalance"
