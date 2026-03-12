@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { startOfMonth, endOfMonth, differenceInDays, format } from 'date-fns';
+import { startOfMonth, endOfMonth, differenceInDays, format, subDays } from 'date-fns';
 import { supabase } from '../../lib/supabase';
 
 export interface Transaction {
@@ -138,6 +138,23 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
   const fetchData = async () => {
     if (!user?.id) return;
     setIsLoading(true);
+
+    // Self-Healing Logic: Trigger daily summary generation if yesterday's summary is missing
+    const triggerDailySummary = async () => {
+      const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
+      const { count } = await supabase
+        .from('daily_summary_notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('date', yesterday);
+
+      if (count === 0) {
+        console.log('Yesterday summary missing, triggering generation...');
+        await supabase.rpc('generate_daily_summaries');
+      }
+    };
+
+    triggerDailySummary();
 
     try {
       const [transRes, costsRes, profileRes, notifRes, recordsRes] = await Promise.all([
