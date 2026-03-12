@@ -321,71 +321,88 @@ export function Transactions() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
+          <div className="space-y-6">
             {paginatedTransactions.length === 0 ? (
               <p className="text-center text-zinc-400 py-8">No transactions found</p>
             ) : (
-              paginatedTransactions.map((transaction) => {
-                const dailyImpact = calculateDailyImpact(transaction);
-                return (
-                  <div
-                    key={transaction.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-[#09090b] rounded-lg border border-zinc-800 hover:border-zinc-700 transition-colors gap-4"
-                  >
-                    <div className="flex items-start sm:items-center gap-4 flex-1 min-w-0">
-                      <div className={`w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center ${
-                        transaction.type === 'income' 
-                          ? 'bg-emerald-500/20' 
-                          : 'bg-rose-500/20'
-                      }`}>
-                        {transaction.type === 'income' ? (
-                          <TrendingUp className="w-5 h-5 text-emerald-500" />
-                        ) : (
-                          <TrendingDown className="w-5 h-5 text-rose-500" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-white font-medium break-words">
-                          {transaction.title}
-                        </p>
-                        {transaction.description && (
-                          <p className="text-sm text-zinc-500 break-words -mt-0.5">
-                            {transaction.description}
+              // Group paginated transactions by month for visual separation
+              Object.entries(
+                paginatedTransactions.reduce((groups, transaction) => {
+                  const month = format(new Date(transaction.date), 'MMMM yyyy');
+                  if (!groups[month]) groups[month] = [];
+                  groups[month].push(transaction);
+                  return groups;
+                }, {} as Record<string, typeof paginatedTransactions>)
+              ).map(([month, monthTransactions]) => (
+                <div key={month} className="space-y-3">
+                  <div className="flex items-center gap-4 py-2">
+                    <div className="h-px flex-1 bg-zinc-800" />
+                    <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{month}</span>
+                    <div className="h-px flex-1 bg-zinc-800" />
+                  </div>
+                  {monthTransactions.map((transaction) => {
+                    const dailyImpact = calculateDailyImpact(transaction);
+                    return (
+                      <div
+                        key={transaction.id}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-[#09090b] rounded-lg border border-zinc-800 hover:border-zinc-700 transition-colors gap-4"
+                      >
+                        <div className="flex items-start sm:items-center gap-4 flex-1 min-w-0">
+                          <div className={`w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center ${
+                            transaction.type === 'income' 
+                              ? 'bg-emerald-500/20' 
+                              : 'bg-rose-500/20'
+                          }`}>
+                            {transaction.type === 'income' ? (
+                              <TrendingUp className="w-5 h-5 text-emerald-500" />
+                            ) : (
+                              <TrendingDown className="w-5 h-5 text-rose-500" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-white font-medium break-words">
+                              {transaction.title}
+                            </p>
+                            {transaction.description && (
+                              <p className="text-sm text-zinc-500 break-words -mt-0.5">
+                                {transaction.description}
+                              </p>
+                            )}
+                            <div className="flex flex-wrap items-center gap-2 mt-1">
+                              <p className="text-xs text-zinc-400">
+                                {format(new Date(transaction.date), 'MMM d, yyyy')}
+                              </p>
+                              <Badge variant="outline" className="text-xs border-zinc-700 text-zinc-400">
+                                {transaction.category}
+                              </Badge>
+                              {dailyImpact > 0 && (
+                                <Badge variant="outline" className="text-xs border-rose-500/50 text-rose-500">
+                                  Daily Impact: -₱{dailyImpact.toFixed(2)}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-zinc-800/50">
+                          <p className={`text-lg font-bold ${
+                            transaction.type === 'income' ? 'text-emerald-500' : 'text-rose-500'
+                          }`}>
+                            {transaction.type === 'income' ? '+' : '-'}₱{transaction.amount.toFixed(2)}
                           </p>
-                        )}
-                        <div className="flex flex-wrap items-center gap-2 mt-1">
-                          <p className="text-xs text-zinc-400">
-                            {format(new Date(transaction.date), 'MMM d, yyyy')}
-                          </p>
-                          <Badge variant="outline" className="text-xs border-zinc-700 text-zinc-400">
-                            {transaction.category}
-                          </Badge>
-                          {dailyImpact > 0 && (
-                            <Badge variant="outline" className="text-xs border-rose-500/50 text-rose-500">
-                              Daily Impact: -₱{dailyImpact.toFixed(2)}
-                            </Badge>
-                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => deleteTransaction(transaction.id)}
+                            className="text-zinc-400 hover:text-rose-500"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-zinc-800/50">
-                      <p className={`text-lg font-bold ${
-                        transaction.type === 'income' ? 'text-emerald-500' : 'text-rose-500'
-                      }`}>
-                        {transaction.type === 'income' ? '+' : '-'}₱{transaction.amount.toFixed(2)}
-                      </p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteTransaction(transaction.id)}
-                        className="text-zinc-400 hover:text-rose-500"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })
+                    );
+                  })}
+                </div>
+              ))
             )}
           </div>
 

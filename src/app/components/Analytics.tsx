@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { useBudget } from '../contexts/BudgetContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Badge } from './ui/badge';
-import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { TrendingUp, TrendingDown, AlertCircle, Target } from 'lucide-react';
+import { Button } from './ui/button';
+import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
+import { TrendingUp, TrendingDown, AlertCircle, Target, Activity, Clock, Zap, ChevronUp, ChevronDown } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, differenceInDays } from 'date-fns';
 
 export function Analytics() {
@@ -15,7 +17,12 @@ export function Analytics() {
     baseBalance,
     carryOverFromLastMonth,
     metrics,
+    fixedCosts,
+    weeklyBurnRate,
+    financialRunway,
+    spendingVelocity,
   } = useBudget();
+  const [isMetricsExpanded, setIsMetricsExpanded] = useState(true);
 
   // Calculate ideal spending path (linear)
   const today = new Date();
@@ -30,15 +37,15 @@ export function Analytics() {
   // Generate data for the burn-down chart
   const chartData = eachDayOfInterval({ start: monthStart, end: today }).map(date => {
     const dayNumber = differenceInDays(date, monthStart) + 1;
-    
+
     // Ideal spending (linear decrease)
     const idealSpent = dailyIdealSpend * dayNumber;
-    
+
     // Actual spending up to this day
     const actualSpent = transactions
       .filter(t => t.type === 'expense' && new Date(t.date) <= date && t.date.startsWith(format(today, 'yyyy-MM')))
       .reduce((sum, t) => sum + t.amount, 0);
-    
+
     return {
       date: format(date, 'MMM d'),
       dayNumber,
@@ -59,13 +66,31 @@ export function Analytics() {
       return acc;
     }, {} as Record<string, number>);
 
-  const categoryChartData = Object.entries(categoryData)
-    .map(([category, amount]) => ({
-      category,
-      amount: parseFloat(amount.toFixed(2)),
-      percentage: ((amount / totalSpentThisMonth) * 100).toFixed(1),
-    }))
-    .sort((a, b) => b.amount - a.amount);
+  // Group fixed costs by category
+  const fixedCostCategoryData = fixedCosts.reduce((acc, fc) => {
+    if (!acc[fc.category]) {
+      acc[fc.category] = 0;
+    }
+    acc[fc.category] += fc.amount;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const categoryChartData = [
+    ...Object.entries(categoryData)
+      .map(([category, amount]) => ({
+        category,
+        amount: parseFloat(amount.toFixed(2)),
+        percentage: ((amount / (totalSpentThisMonth + totalFixedCosts)) * 100).toFixed(1),
+        isFixedCost: false
+      })),
+    ...Object.entries(fixedCostCategoryData)
+      .map(([category, amount]) => ({
+        category: category,
+        amount: parseFloat(amount.toFixed(2)),
+        percentage: ((amount / (totalSpentThisMonth + totalFixedCosts)) * 100).toFixed(1),
+        isFixedCost: true
+      }))
+  ].sort((a, b) => b.amount - a.amount);
 
   // Calculate burn rate
   const daysElapsed = differenceInDays(today, monthStart) + 1;
@@ -80,94 +105,191 @@ export function Analytics() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-2">The Forecast</h1>
-        <p className="text-zinc-400">Analyze spending patterns and project future performance</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">The Forecast</h1>
+          <p className="text-zinc-400">Analyze spending patterns and project future performance</p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsMetricsExpanded(!isMetricsExpanded)}
+          className="text-zinc-400 hover:text-white"
+        >
+          {isMetricsExpanded ? (
+            <><ChevronUp className="w-4 h-4 mr-2" /> Hide Metrics</>
+          ) : (
+            <><ChevronDown className="w-4 h-4 mr-2" /> Show Metrics</>
+          )}
+        </Button>
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-[#18181b] border-zinc-800">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm text-zinc-400">Current Burn Rate</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-white">
-                  ₱{actualDailyBurn.toFixed(2)}/day
-                </p>
-                <p className="text-xs text-zinc-500 mt-1">
-                  Target: ₱{dailyIdealSpend.toFixed(2)}/day
-                </p>
-                <p className="text-[10px] text-zinc-600 mt-2 italic">
-                  *Excludes fixed costs (₱{totalFixedCosts.toLocaleString()})
-                </p>
+      {isMetricsExpanded && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          {/* Behavioral Metrics (New) */}
+          <Card className="bg-[#18181b] border-zinc-800">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm text-zinc-400">Weekly Burn Rate</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className={`text-2xl font-bold ${weeklyBurnRate > 1 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                    {(weeklyBurnRate * 100).toFixed(1)}%
+                  </p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <Activity className={`w-3 h-3 ${weeklyBurnRate > 1 ? 'text-rose-500' : 'text-emerald-500'}`} />
+                    <p className="text-[10px] text-zinc-500">
+                      {weeklyBurnRate > 1 ? 'Faster than planned' : 'Controlled pace'}
+                    </p>
+                  </div>
+                </div>
+                <Badge
+                  variant="outline"
+                  className={weeklyBurnRate <= 1
+                    ? 'border-emerald-500/50 text-emerald-500'
+                    : 'border-rose-500/50 text-rose-500'}
+                >
+                  {weeklyBurnRate.toFixed(2)}x
+                </Badge>
               </div>
-              <Badge 
-                variant="outline"
-                className={isOnTrack 
-                  ? 'border-emerald-500/50 text-emerald-500' 
-                  : 'border-rose-500/50 text-rose-500'}
-              >
-                {isOnTrack ? 'On Track' : 'Over'}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card className="bg-[#18181b] border-zinc-800">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm text-zinc-400">Projected Month-End</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className={`text-2xl font-bold ${
-                  projectedEndBalance > 0 ? 'text-emerald-500' : 'text-rose-500'
-                }`}>
-                  {projectedEndBalance > 0 ? '+' : ''}₱{projectedEndBalance.toFixed(0)}
-                </p>
-                <p className="text-xs text-zinc-500 mt-1">
-                  Estimated carry-over
-                </p>
+          <Card className="bg-[#18181b] border-zinc-800">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm text-zinc-400">Financial Runway</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className={`text-2xl font-bold ${(financialRunway ?? 0) > 10 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                    {financialRunway !== null ? `${financialRunway} Days` : 'Determining...'}
+                  </p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <Clock className="w-3 h-3 text-zinc-500" />
+                    <p className="text-[10px] text-zinc-500">Estimated survival</p>
+                  </div>
+                </div>
+                <TrendingUp className={`w-8 h-8 ${(financialRunway ?? 0) > 10 ? 'text-emerald-500' : 'text-rose-500'}`} />
               </div>
-              {projectedEndBalance > 0 ? (
-                <TrendingUp className="w-8 h-8 text-emerald-500" />
-              ) : (
-                <TrendingDown className="w-8 h-8 text-rose-500" />
-              )}
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card className="bg-[#18181b] border-zinc-800">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm text-zinc-400">Days Remaining</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-white">
-                  {daysRemaining}
-                </p>
-                <p className="text-xs text-zinc-500 mt-1">
-                  until month end
-                </p>
+          <Card className="bg-[#18181b] border-zinc-800">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm text-zinc-400">Spending Velocity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className={`text-2xl font-bold ${spendingVelocity > 1 ? 'text-rose-500' : 'text-blue-500'}`}>
+                    {spendingVelocity.toFixed(2)}x
+                  </p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <Zap className={`w-3 h-3 ${spendingVelocity > 1 ? 'text-rose-500' : 'text-blue-500'}`} />
+                    <p className="text-[10px] text-zinc-500">Relative to ideal path</p>
+                  </div>
+                </div>
+                <Target className={`w-8 h-8 ${spendingVelocity > 1 ? 'text-rose-500' : 'text-blue-500'}`} />
               </div>
-              <Target className="w-8 h-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+
+          {/* Traditional Metrics (Restored) */}
+          <Card className="bg-[#18181b] border-zinc-800">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm text-zinc-400">Current Burn Rate</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xl sm:text-2xl font-bold text-white whitespace-nowrap overflow-hidden text-ellipsis">
+                    ₱{actualDailyBurn.toFixed(2)}<span className="text-sm font-normal text-zinc-500">/day</span>
+                  </p>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    Target: ₱{dailyIdealSpend.toFixed(2)}/day
+                  </p>
+                  <p className="text-[10px] text-zinc-600 mt-2 italic">
+                    *Excludes recurring bills (₱{totalFixedCosts.toLocaleString()})
+                  </p>
+                </div>
+                <Badge
+                  variant="outline"
+                  className={isOnTrack
+                    ? 'border-emerald-500/50 text-emerald-500'
+                    : 'border-rose-500/50 text-rose-500'}
+                >
+                  {isOnTrack ? 'On Track' : 'Over'}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#18181b] border-zinc-800">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm text-zinc-400">Projected Month-End</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className={`text-2xl font-bold ${projectedEndBalance > 0 ? 'text-emerald-500' : 'text-rose-500'
+                    }`}>
+                    {projectedEndBalance > 0 ? '+' : ''}₱{projectedEndBalance.toFixed(0)}
+                  </p>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    Estimated carry-over
+                  </p>
+                </div>
+                {projectedEndBalance > 0 ? (
+                  <TrendingUp className="w-8 h-8 text-emerald-500" />
+                ) : (
+                  <TrendingDown className="w-8 h-8 text-rose-500" />
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#18181b] border-zinc-800">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm text-zinc-400">Days Remaining</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-2xl font-bold text-white">
+                    {daysRemaining}
+                  </p>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    until month end
+                  </p>
+                </div>
+                <Target className="w-8 h-8 text-blue-500" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Spending vs Ideal Path */}
       <Card className="bg-[#18181b] border-zinc-800">
         <CardHeader>
-          <CardTitle className="text-white">Actual vs Ideal Spending Path</CardTitle>
-          <CardDescription className="text-zinc-400">
-            Pacing for variable spending (Base Budget - Fixed Costs)
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-white">Actual vs Ideal Spending Path</CardTitle>
+              <CardDescription className="text-zinc-400">
+                Pacing for variable spending (Base Budget - Recurring Bills)
+              </CardDescription>
+            </div>
+            <Badge
+              variant="outline"
+              className={`flex items-center gap-1 ${spendingVelocity > 1 ? 'border-rose-500 text-rose-500' : 'border-blue-500 text-blue-500'}`}
+            >
+              <Zap className="w-3 h-3" />
+              Velocity: {spendingVelocity.toFixed(2)}x
+            </Badge>
+          </div>
         </CardHeader>
         <CardContent>
           {chartData.length > 0 ? (
@@ -175,28 +297,28 @@ export function Analytics() {
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="idealGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={isOnTrack ? "#22c55e" : "#ef4444"} stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor={isOnTrack ? "#22c55e" : "#ef4444"} stopOpacity={0}/>
+                    <stop offset="5%" stopColor={isOnTrack ? "#22c55e" : "#ef4444"} stopOpacity={0.3} />
+                    <stop offset="95%" stopColor={isOnTrack ? "#22c55e" : "#ef4444"} stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                <XAxis 
-                  dataKey="date" 
+                <XAxis
+                  dataKey="date"
                   stroke="#71717a"
                   tick={{ fill: '#71717a', fontSize: 12 }}
                 />
-                <YAxis 
+                <YAxis
                   stroke="#71717a"
                   tick={{ fill: '#71717a', fontSize: 12 }}
                   tickFormatter={(value) => `₱${value}`}
                 />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#18181b', 
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#18181b',
                     border: '1px solid #27272a',
                     borderRadius: '8px',
                     color: '#fff'
@@ -204,21 +326,21 @@ export function Analytics() {
                   formatter={(value: any) => [`₱${value.toFixed(2)}`, '']}
                   labelStyle={{ color: '#a1a1aa' }}
                 />
-                <Legend 
+                <Legend
                   wrapperStyle={{ color: '#71717a' }}
                   iconType="line"
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="idealSpent" 
-                  stroke="#3b82f6" 
+                <Area
+                  type="monotone"
+                  dataKey="idealSpent"
+                  stroke="#3b82f6"
                   fill="url(#idealGradient)"
                   name="Ideal Spending"
                   strokeWidth={2}
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="actualSpent" 
+                <Area
+                  type="monotone"
+                  dataKey="actualSpent"
                   stroke={isOnTrack ? "#22c55e" : "#ef4444"}
                   fill="url(#actualGradient)"
                   name="Actual Spending"
@@ -239,46 +361,66 @@ export function Analytics() {
         <CardHeader>
           <CardTitle className="text-white">Spending by Category</CardTitle>
           <CardDescription className="text-zinc-400">
-            Where your money is going this month
+            Total monthly allocation including recurring bills
           </CardDescription>
         </CardHeader>
         <CardContent>
           {categoryChartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={categoryChartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                <XAxis 
-                  dataKey="category" 
-                  stroke="#71717a"
-                  tick={{ fill: '#71717a', fontSize: 12 }}
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                />
-                <YAxis 
-                  stroke="#71717a"
-                  tick={{ fill: '#71717a', fontSize: 12 }}
-                  tickFormatter={(value) => `₱${value}`}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#18181b', 
-                    border: '1px solid #27272a',
-                    borderRadius: '8px',
-                    color: '#fff'
-                  }}
-                  formatter={(value: any, name: string, props: any) => [
-                    `₱${value.toFixed(2)} (${props.payload.percentage}%)`,
-                    'Amount'
-                  ]}
-                />
-                <Bar 
-                  dataKey="amount" 
-                  fill="#22c55e"
-                  radius={[8, 8, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+            <>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={categoryChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                  <XAxis
+                    dataKey="category"
+                    stroke="#71717a"
+                    tick={{ fill: '#71717a', fontSize: 12 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis
+                    stroke="#71717a"
+                    tick={{ fill: '#71717a', fontSize: 12 }}
+                    tickFormatter={(value) => `₱${value}`}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#18181b',
+                      border: '1px solid #27272a',
+                      borderRadius: '8px',
+                      color: '#fff'
+                    }}
+                    formatter={(value: any, name: string, props: any) => [
+                      `₱${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${props.payload.percentage}%)`,
+                      'Amount'
+                    ]}
+                  />
+                  <Bar
+                    dataKey="amount"
+                    radius={[8, 8, 0, 0]}
+                  >
+                    {categoryChartData.map((entry: any, index: number) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.isFixedCost ? '#3b82f6' : '#22c55e'}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+
+              {/* Legend */}
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-6 border-t border-zinc-800/50 pt-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-[#22c55e]" />
+                  <span className="text-xs text-zinc-400">Regular Spending</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-[#3b82f6]" />
+                  <span className="text-xs text-zinc-400">Recurring bills</span>
+                </div>
+              </div>
+            </>
           ) : (
             <div className="h-[300px] flex items-center justify-center text-zinc-400">
               No category data available
@@ -286,6 +428,7 @@ export function Analytics() {
           )}
         </CardContent>
       </Card>
+
 
       {/* Insights */}
       <Card className="bg-gradient-to-br from-blue-900/20 to-blue-800/20 border-blue-700/50">
@@ -302,7 +445,7 @@ export function Analytics() {
               <div>
                 <p className="text-white font-medium text-sm">Spending Above Target</p>
                 <p className="text-sm text-zinc-400 mt-1">
-                  You're spending ₱{(actualDailyBurn - dailyIdealSpend).toFixed(2)} more per day than your ideal rate. 
+                  You're spending ₱{(actualDailyBurn - dailyIdealSpend).toFixed(2)} more per day than your ideal rate.
                   Consider reducing discretionary expenses to stay on track.
                 </p>
               </div>
@@ -315,7 +458,7 @@ export function Analytics() {
               <div>
                 <p className="text-white font-medium text-sm">Great Job!</p>
                 <p className="text-sm text-zinc-400 mt-1">
-                  You're on track to carry over ₱{projectedCarryOver.toFixed(0)} to next month. 
+                  You're on track to carry over ₱{projectedCarryOver.toFixed(0)} to next month.
                   Keep up the good work!
                 </p>
               </div>

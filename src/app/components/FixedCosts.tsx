@@ -8,7 +8,7 @@ import { Label } from './ui/label';
 import { Badge } from './ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Plus, Trash2, Lock, Calendar } from 'lucide-react';
+import { Plus, Trash2, Lock, Calendar, Clock } from 'lucide-react';
 
 const categories = [
   'Rent/Mortgage',
@@ -58,7 +58,7 @@ export function FixedCosts() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Fixed Costs Manager</h1>
-          <p className="text-zinc-400">Lock in your recurring bills and subscriptions</p>
+          <p className="text-zinc-400">Allocate and reserve your recurring bills and subscriptions</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -147,7 +147,7 @@ export function FixedCosts() {
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
             <Lock className="w-5 h-5 text-orange-500" />
-            Locked Budget
+            Reserved Budget Allocation
           </CardTitle>
           <CardDescription className="text-zinc-400">
             These amounts are automatically deducted from your monthly pool
@@ -201,7 +201,7 @@ export function FixedCosts() {
               <Lock className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
               <p className="text-zinc-400 mb-2">No fixed costs added yet</p>
               <p className="text-sm text-zinc-500">
-                Add recurring bills to lock them from your monthly budget
+                Add recurring bills to reserve them from your monthly budget
               </p>
             </div>
           ) : (
@@ -228,6 +228,18 @@ export function FixedCosts() {
                             <span>
                               Due: {cost.dueDate}
                               {cost.dueDate === 1 ? 'st' : cost.dueDate === 2 ? 'nd' : cost.dueDate === 3 ? 'rd' : 'th'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1 text-[10px] text-blue-500 font-medium">
+                            <Clock className="w-3 h-3" />
+                            <span>
+                              {(() => {
+                                const today = new Date().getDate();
+                                const daysUntil = cost.dueDate >= today 
+                                  ? cost.dueDate - today 
+                                  : (new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate() - today + cost.dueDate);
+                                return daysUntil === 0 ? 'Due Today' : `Due in ${daysUntil} Days`;
+                              })()}
                             </span>
                           </div>
                         </div>

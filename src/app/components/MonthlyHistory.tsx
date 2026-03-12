@@ -1,14 +1,42 @@
 import { useBudget } from '../contexts/BudgetContext';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { TrendingUp, TrendingDown, Calendar as CalendarIcon } from 'lucide-react';
+import { TrendingUp, TrendingDown, Calendar as CalendarIcon, Target } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 
 export function MonthlyHistory() {
-  const { monthlyRecords, baseBalance } = useBudget();
+  const {
+    monthlyRecords,
+    baseBalance,
+    budgetDisciplineScore,
+    totalSpentThisMonth,
+    totalIncomeThisMonth,
+    totalBudgetPool,
+    carryOverFromLastMonth,
+    currentMonthPool,
+    totalFixedCosts,
+    transactions
+  } = useBudget();
 
-  // Sort by month descending (newest first)
-  const sortedRecords = [...monthlyRecords].sort((a, b) => 
+  // Create a synthetic "Live" record for the current month
+  const currentMonthStr = format(new Date(), 'yyyy-MM');
+  const liveRecord = {
+    month: currentMonthStr,
+    baseBalance: baseBalance,
+    carryOver: carryOverFromLastMonth,
+    totalIncome: totalIncomeThisMonth,
+    totalExpenses: totalSpentThisMonth,
+    fixedCosts: totalFixedCosts,
+    netResult: currentMonthPool,
+    transactions: transactions.filter(t => t.date.startsWith(currentMonthStr)),
+    isLive: true
+  };
+
+  // Filter out the existing database record for this month if it exists to avoid duplication
+  const historicalRecords = monthlyRecords.filter(r => r.month !== currentMonthStr);
+
+  // Combine and sort
+  const sortedRecords = [liveRecord, ...historicalRecords].sort((a, b) =>
     b.month.localeCompare(a.month)
   );
 
@@ -43,15 +71,14 @@ export function MonthlyHistory() {
               const monthDate = parseISO(record.month + '-01');
               const isPositive = record.netResult >= 0;
               const inputTotal = record.baseBalance + record.carryOver + record.totalIncome;
-              
+
               return (
                 <div key={record.month} className="relative pl-16 md:pl-20">
                   {/* Timeline dot */}
-                  <div className={`absolute left-4 md:left-6 w-5 h-5 rounded-full border-4 ${
-                    isPositive 
-                      ? 'bg-emerald-500 border-emerald-500/30' 
+                  <div className={`absolute left-4 md:left-6 w-5 h-5 rounded-full border-4 ${isPositive
+                      ? 'bg-emerald-500 border-emerald-500/30'
                       : 'bg-rose-500 border-rose-500/30'
-                  }`} />
+                    }`} />
 
                   <Card className="bg-[#18181b] border-zinc-800 hover:border-zinc-700 transition-colors">
                     <CardHeader>
@@ -61,18 +88,39 @@ export function MonthlyHistory() {
                             {format(monthDate, 'MMMM yyyy')}
                           </CardTitle>
                           <p className="text-sm text-zinc-400 mt-1">
-                            {index === 0 ? 'Current Month' : `${index} month${index > 1 ? 's' : ''} ago`}
+                            {(record as any).isLive ? 'Live Performance' : (index === 0 ? 'Latest Record' : `${index} month${index > 1 ? 's' : ''} ago`)}
                           </p>
                         </div>
-                        <Badge 
+                        <Badge
                           variant="outline"
-                          className={isPositive 
-                            ? 'border-emerald-500/50 text-emerald-500' 
+                          className={isPositive
+                            ? 'border-emerald-500/50 text-emerald-500'
                             : 'border-rose-500/50 text-rose-500'}
                         >
-                          {isPositive ? 'Surplus' : 'Deficit'}
+                          {(record as any).isLive ? 'Real-time ' : ''}{isPositive ? 'Surplus' : 'Deficit'}
                         </Badge>
                       </div>
+                      {index === 0 && (
+                        <div className="mt-4 flex items-center justify-between p-3 bg-zinc-900/50 rounded-lg border border-zinc-800">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                              <Target className="w-6 h-6 text-blue-500" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-zinc-400 font-medium uppercase tracking-wider">Discipline Score</p>
+                              <p className="text-xl font-bold text-white">{budgetDisciplineScore} / 100</p>
+                            </div>
+                          </div>
+                          <div className="flex-1 max-w-[150px] ml-4">
+                            <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-blue-500 transition-all duration-1000"
+                                style={{ width: `${budgetDisciplineScore}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -82,7 +130,7 @@ export function MonthlyHistory() {
                             <TrendingUp className="w-4 h-4 text-emerald-500" />
                             <h4 className="text-sm font-medium text-zinc-400">Input</h4>
                           </div>
-                          
+
                           <div className="space-y-2 pl-6">
                             <div className="flex justify-between text-sm">
                               <span className="text-zinc-500">Base Budget</span>
@@ -90,7 +138,7 @@ export function MonthlyHistory() {
                                 ₱{record.baseBalance.toLocaleString()}
                               </span>
                             </div>
-                            
+
                             {record.carryOver !== 0 && (
                               <div className="flex justify-between text-sm">
                                 <span className="text-zinc-500">Carry-Over</span>
@@ -99,7 +147,7 @@ export function MonthlyHistory() {
                                 </span>
                               </div>
                             )}
-                            
+
                             {record.totalIncome > 0 && (
                               <div className="flex justify-between text-sm">
                                 <span className="text-zinc-500">Income</span>
@@ -108,7 +156,7 @@ export function MonthlyHistory() {
                                 </span>
                               </div>
                             )}
-                            
+
                             <div className="flex justify-between text-sm pt-2 border-t border-zinc-800">
                               <span className="text-zinc-400 font-medium">Total Available</span>
                               <span className="text-white font-bold">
@@ -124,27 +172,37 @@ export function MonthlyHistory() {
                             <TrendingDown className="w-4 h-4 text-rose-500" />
                             <h4 className="text-sm font-medium text-zinc-400">Output</h4>
                           </div>
-                          
+
                           <div className="space-y-2 pl-6">
                             <div className="flex justify-between text-sm">
-                              <span className="text-zinc-500">Total Expenses</span>
+                              <span className="text-zinc-500">Expenses</span>
                               <span className="text-rose-500">
                                 -₱{record.totalExpenses.toLocaleString()}
                               </span>
                             </div>
+
+                            {((record as any).fixedCosts !== undefined || (record as any).isLive) && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-zinc-500">Reserved Fixed Costs</span>
+                                <span className="text-orange-500">
+                                  -₱{((record as any).fixedCosts || totalFixedCosts).toLocaleString()}
+                                </span>
+                              </div>
+                            )}
                             
+
+
                             <div className="flex justify-between text-sm">
                               <span className="text-zinc-500">Transactions</span>
                               <span className="text-zinc-400">
                                 {record.transactions.length} items
                               </span>
                             </div>
-                            
+
                             <div className="flex justify-between text-sm pt-2 border-t border-zinc-800">
                               <span className="text-zinc-400 font-medium">Net Result</span>
-                              <span className={`font-bold ${
-                                isPositive ? 'text-emerald-500' : 'text-rose-500'
-                              }`}>
+                              <span className={`font-bold ${isPositive ? 'text-emerald-500' : 'text-rose-500'
+                                }`}>
                                 {isPositive ? '+' : ''}₱{record.netResult.toLocaleString()}
                               </span>
                             </div>
@@ -159,12 +217,11 @@ export function MonthlyHistory() {
                           <span>{((record.totalExpenses / inputTotal) * 100).toFixed(1)}%</span>
                         </div>
                         <div className="w-full bg-zinc-800 rounded-full h-2">
-                          <div 
-                            className={`h-2 rounded-full transition-all ${
-                              (record.totalExpenses / inputTotal) > 1 
-                                ? 'bg-rose-500' 
+                          <div
+                            className={`h-2 rounded-full transition-all ${(record.totalExpenses / inputTotal) > 1
+                                ? 'bg-rose-500'
                                 : 'bg-emerald-500'
-                            }`}
+                              }`}
                             style={{ width: `${Math.min((record.totalExpenses / inputTotal) * 100, 100)}%` }}
                           />
                         </div>

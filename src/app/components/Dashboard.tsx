@@ -2,10 +2,11 @@ import { useBudget } from '../contexts/BudgetContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Progress } from './ui/progress';
 import { Badge } from './ui/badge';
-import { TrendingUp, TrendingDown, DollarSign, Calendar, Zap, Bell } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Calendar, Zap, Bell, Heart, ShieldCheck, AlertTriangle, Info } from 'lucide-react';
 import { format } from 'date-fns';
 import { SettingsDialog } from './SettingsDialog';
 import { BudgetProjection } from './BudgetProjection';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 export function Dashboard() {
   const {
@@ -20,6 +21,9 @@ export function Dashboard() {
     carryOverFromLastMonth,
     baseBalance,
     projectedCarryOver,
+    financialHealthState,
+    safeSpendToday,
+    predictiveAlert,
   } = useBudget();
 
   const dailySpendable = metrics?.daily_spendable ?? 0;
@@ -78,12 +82,36 @@ export function Dashboard() {
               {unreadCount} Alerts
             </Badge>
           )}
+          <Badge 
+            variant="outline" 
+            className={`flex items-center gap-1 border-current ${financialHealthState.color} bg-zinc-900/50`}
+          >
+            <Heart className="w-3 h-3 fill-current" />
+            {financialHealthState.state}
+          </Badge>
           <Badge variant="outline" className="border-zinc-700 text-zinc-400">
             Goal: {primaryGoal}
           </Badge>
           <SettingsDialog />
         </div>
       </div>
+
+      {predictiveAlert && (
+        <Card className="bg-amber-500/10 border-amber-500/50 border animate-in fade-in slide-in-from-top-4 duration-500">
+          <CardContent className="py-4 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-6 h-6 text-amber-500" />
+            </div>
+            <div className="flex-1">
+              <p className="text-amber-200 text-sm font-medium">Predictive Overspending Alert</p>
+              <p className="text-amber-500/80 text-xs">{predictiveAlert.message}</p>
+            </div>
+            <Badge variant="outline" className="border-amber-500/50 text-amber-500 whitespace-nowrap">
+              {predictiveAlert.daysToNegative ?? 0} Days Until Deficit
+            </Badge>
+          </CardContent>
+        </Card>
+      )}
 
       {isLoading && (
         <div className="animate-pulse text-zinc-500 text-sm">Loading core engine metrics...</div>
@@ -164,6 +192,41 @@ export function Dashboard() {
         </CardContent>
       </Card>
 
+      {/* Safe Spend Today - Secondary Gauge */}
+      <Card className="bg-zinc-900/50 border-zinc-800 shadow-sm">
+        <CardContent className="py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5 text-blue-500" />
+              </div>
+              <div>
+                <p className="text-xs text-zinc-400 font-medium">Safe Spend Today</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xl font-bold text-white">₱{safeSpendToday.toFixed(2)}</p>
+                  <TooltipProvider>
+                    <Tooltip shadow-none>
+                      <TooltipTrigger>
+                        <Info className="w-3 h-3 text-zinc-500" />
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-zinc-800 border-zinc-700 text-zinc-300 text-xs max-w-xs">
+                        Accounts for unpaid bills due today and your daily allowance.
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Health Status</p>
+              <p className={`text-sm font-semibold ${financialHealthState.color}`}>
+                {financialHealthState.message}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Budget Projection Section */}
       <BudgetProjection />
 
@@ -220,7 +283,7 @@ export function Dashboard() {
       </Card>
 
       {/* Budget Breakdown */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         <Card className="bg-[#18181b] border-zinc-800">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm text-zinc-400">Base Budget</CardTitle>
@@ -230,7 +293,7 @@ export function Dashboard() {
               <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
                 <DollarSign className="w-5 h-5 text-blue-500" />
               </div>
-              <p className="text-2xl font-bold text-white">
+              <p className="text-xl sm:text-2xl font-bold text-white truncate">
                 ₱{baseBalance.toLocaleString()}
               </p>
             </div>
@@ -247,7 +310,7 @@ export function Dashboard() {
                 <DollarSign className="w-5 h-5 text-emerald-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-xl sm:text-2xl font-bold text-white truncate">
                   ₱{totalBudgetPool.toLocaleString()}
                 </p>
                 <p className="text-xs text-zinc-500">Base + Inherited</p>
@@ -266,7 +329,7 @@ export function Dashboard() {
                 <TrendingUp className="w-5 h-5 text-emerald-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-xl sm:text-2xl font-bold text-white truncate">
                   ₱{totalIncome.toLocaleString()}
                 </p>
                 <p className="text-xs text-zinc-500">This Month</p>
@@ -284,7 +347,7 @@ export function Dashboard() {
               <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center">
                 <DollarSign className="w-5 h-5 text-orange-500" />
               </div>
-              <p className="text-2xl font-bold text-white">
+              <p className="text-xl sm:text-2xl font-bold text-white truncate">
                 ₱{totalFixedCosts.toLocaleString()}
               </p>
             </div>
@@ -300,7 +363,7 @@ export function Dashboard() {
               <div className="w-10 h-10 bg-rose-500/20 rounded-lg flex items-center justify-center">
                 <DollarSign className="w-5 h-5 text-rose-500" />
               </div>
-              <p className="text-2xl font-bold text-white">
+              <p className="text-xl sm:text-2xl font-bold text-white truncate">
                 ₱{totalSpentThisMonth.toLocaleString()}
               </p>
             </div>

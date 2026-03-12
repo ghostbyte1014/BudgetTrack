@@ -60,6 +60,7 @@ interface BudgetContextType {
   currentMonthPool: number;
   totalBudgetPool: number;
   totalSpentThisMonth: number;
+  totalIncomeThisMonth: number;
   totalFixedCosts: number;
   dailySpendable: number;
   dailySpendableProjection: number[];
@@ -71,6 +72,22 @@ interface BudgetContextType {
   isLoading: boolean;
   metrics: PulseMetrics | null;
   unreadCount: number;
+
+  // Behavioral Analytics (Phase 1-8)
+  financialHealthState: {
+    state: 'Stable' | 'Warning' | 'Risk' | 'Deficit' | 'Critical';
+    color: string;
+    message: string;
+  };
+  safeSpendToday: number;
+  weeklyBurnRate: number;
+  financialRunway: number | null;
+  spendingVelocity: number;
+  budgetDisciplineScore: number;
+  predictiveAlert: {
+    message: string;
+    daysToNegative: number | null;
+  } | null;
 }
 import { PulseMetrics } from '../../hooks/useBudgetSystem';
 
@@ -371,6 +388,81 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
     current_deficit: currentDeficit
   };
 
+  // --- PHASE 1: FINANCIAL HEALTH STATES ---
+  const totalMonthlyBudget = totalBudgetPool;
+  const healthRatio = totalMonthlyBudget > 0 ? (absoluteBalance / totalMonthlyBudget) : 0;
+  
+  let financialHealthState: BudgetContextType['financialHealthState'];
+  if (absoluteBalance < -(0.2 * totalMonthlyBudget)) {
+    financialHealthState = { state: 'Critical', color: 'text-red-600', message: 'Urgent: Significant budget deficit!' };
+  } else if (absoluteBalance < 0) {
+    financialHealthState = { state: 'Deficit', color: 'text-rose-500', message: 'Recovery Mode: Balance below zero.' };
+  } else if (healthRatio < 0.1) {
+    financialHealthState = { state: 'Risk', color: 'text-orange-500', message: 'Warning: Daily allowance is shrinking.' };
+  } else if (healthRatio < 0.2) {
+    financialHealthState = { state: 'Warning', color: 'text-amber-500', message: 'Alert: Spending approaching limit.' };
+  } else {
+    financialHealthState = { state: 'Stable', color: 'text-emerald-500', message: 'Stable: Financially on track.' };
+  }
+
+  // --- PHASE 2: SAFE SPEND TODAY ---
+  const billsDueToday = fixedCosts
+    .filter(f => f.dueDate === currentDay && !f.isSatisfied)
+    .reduce((sum, f) => sum + f.amount, 0);
+  const safeSpendToday = Math.max(0, dailySpendable - billsDueToday);
+
+  // --- PHASE 3: WEEKLY BURN RATE ---
+  const startOfWeek = new Date();
+  startOfWeek.setDate(currentDay - startOfWeek.getDay()); // Simple start of week (Sunday)
+  const startOfWeekStr = format(startOfWeek, 'yyyy-MM-dd');
+  
+  const weeklyExpenses = currentMonthTransactions
+    .filter(t => t.type === 'expense' && t.date >= startOfWeekStr)
+    .reduce((sum, t) => sum + t.amount, 0);
+  
+  const idealWeeklyBudget = (totalMonthlyBudget / daysInMonth) * 7;
+  const weeklyBurnRate = idealWeeklyBudget > 0 ? weeklyExpenses / idealWeeklyBudget : 0;
+
+  // --- PHASE 4: FINANCIAL RUNWAY ---
+  const averageDailySpend = currentDay > 1 ? totalSpentThisMonth / (currentDay - 1) : totalSpentThisMonth;
+  const financialRunway = (absoluteBalance > 0 && averageDailySpend > 0) 
+    ? Math.floor(absoluteBalance / averageDailySpend) 
+    : null;
+
+  // --- PHASE 6: SPENDING VELOCITY ---
+  const idealSpendingToDate = (totalMonthlyBudget / daysInMonth) * currentDay;
+  const spendingVelocity = idealSpendingToDate > 0 ? totalSpentThisMonth / idealSpendingToDate : 0;
+
+  // --- PHASE 7: BUDGET DISCIPLINE SCORE ---
+  let score = 100;
+  // Penalty for overspending relative to budget
+  if (totalSpentThisMonth > totalMonthlyBudget) {
+    score -= Math.min(40, ((totalSpentThisMonth - totalMonthlyBudget) / totalMonthlyBudget) * 100);
+  }
+  // Penalty for deficit days (simplified as current deficit)
+  if (absoluteBalance < 0) score -= 20;
+  // Bonus/Penalty for bill reliability
+  const paidBillsRatio = fixedCosts.length > 0 
+    ? fixedCosts.filter(f => f.isSatisfied).length / fixedCosts.length 
+    : 1;
+  score += (paidBillsRatio - 0.5) * 20; // Up to +10 or -10
+  
+  const budgetDisciplineScore = Math.max(0, Math.min(100, score));
+
+  // --- PHASE 8: PREDICTIVE OVERSPENDING ALERTS ---
+  const projectedTotalSpending = averageDailySpend * daysInMonth;
+  let predictiveAlert: BudgetContextType['predictiveAlert'] = null;
+  
+  if (projectedTotalSpending > totalMonthlyBudget) {
+    const daysToNegative = absoluteBalance > 0 && averageDailySpend > 0 
+      ? Math.floor(absoluteBalance / averageDailySpend) 
+      : 0;
+    predictiveAlert = {
+      message: `At your current spending pace, your balance will become negative in approximately ${daysToNegative} days.`,
+      daysToNegative
+    };
+  }
+
   return (
     <BudgetContext.Provider
       value={{
@@ -391,6 +483,7 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
         currentMonthPool,
         totalBudgetPool,
         totalSpentThisMonth,
+        totalIncomeThisMonth,
         totalFixedCosts,
         dailySpendable,
         dailySpendableProjection,
@@ -401,7 +494,14 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
         markFixedCostSatisfied,
         isLoading,
         metrics: generatedMetrics,
-        unreadCount
+        unreadCount,
+        financialHealthState,
+        safeSpendToday,
+        weeklyBurnRate,
+        financialRunway,
+        spendingVelocity,
+        budgetDisciplineScore,
+        predictiveAlert
       }}
     >
       {children}
