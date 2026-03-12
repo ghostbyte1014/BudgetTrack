@@ -5,7 +5,8 @@ import { supabase } from '../../lib/supabase';
 export interface Transaction {
   id: string;
   date: string;
-  description: string;
+  title: string;
+  description?: string;
   amount: number;
   category: string;
   type: 'expense' | 'income';
@@ -130,6 +131,7 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
         const mappedTransactions = (transRes.data as any[]).map((t: any) => ({
           id: t.id,
           date: t.date,
+          title: t.title,
           description: t.description,
           amount: Number(t.amount),
           category: t.category,
@@ -221,7 +223,8 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
     const { data, error } = await supabase.from('transactions').insert({
       user_id: user.id,
       date: transaction.date,
-      description: transaction.description,
+      title: transaction.title,
+      description: transaction.description || null,
       amount: transaction.amount,
       category: transaction.category,
       type: transaction.type,
@@ -238,7 +241,8 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
       const mapped: Transaction = {
         id: data.id,
         date: data.date,
-        description: data.description,
+        title: data.title,
+        description: data.description || null,
         amount: Number(data.amount),
         category: data.category,
         type: data.type,
@@ -255,7 +259,7 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
       await supabase.from('notifications').insert({
         user_id: user.id,
         title: 'Deficit Alert',
-        message: `Your recent transaction "${transaction.description}" pushed your balance to -$${Math.abs(projectedPool).toFixed(2)}. Adjust spending to recover!`,
+        message: `Your recent transaction "${transaction.title}" pushed your balance to -$${Math.abs(projectedPool).toFixed(2)}. Adjust spending to recover!`,
         type: 'warning'
       });
     }

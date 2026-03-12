@@ -40,6 +40,7 @@ export function Transactions() {
   const [filterMonth, setFilterMonth] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [formData, setFormData] = useState({
+    title: '',
     description: '',
     amount: '',
     category: 'Other',
@@ -54,6 +55,7 @@ export function Transactions() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     addTransaction({
+      title: formData.title,
       description: formData.description,
       amount: parseFloat(formData.amount),
       category: formData.category,
@@ -65,6 +67,7 @@ export function Transactions() {
     // Auto-satisfaction is handled by PostgreSQL trigger mark_fixed_cost_paid
 
     setFormData({
+      title: '',
       description: '',
       amount: '',
       category: 'Other',
@@ -97,7 +100,8 @@ export function Transactions() {
 
   // Filter transactions
   const filteredTransactions = transactions.filter(t => {
-    const matchesSearch = t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (t.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
                          t.category.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory === 'all' || t.category === filterCategory;
     const matchesMonth = filterMonth === 'all' || t.date.startsWith(filterMonth);
@@ -171,7 +175,7 @@ export function Transactions() {
                         setFormData({ 
                           ...formData, 
                           fixedCostId: value, 
-                          description: cost.name, 
+                          title: cost.name, 
                           amount: cost.amount.toString(), 
                           category: cost.category 
                         });
@@ -196,13 +200,25 @@ export function Transactions() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="description" className="text-zinc-200">Description</Label>
+                <Label htmlFor="title" className="text-zinc-200">Title</Label>
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="e.g., Grocery Shopping"
+                  className="bg-[#09090b] border-zinc-700 text-white"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description" className="text-zinc-200">Description (Optional)</Label>
                 <Input
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="e.g., Milk, Eggs, Bread"
                   className="bg-[#09090b] border-zinc-700 text-white"
-                  required
                 />
               </div>
 
@@ -330,8 +346,13 @@ export function Transactions() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-white font-medium truncate">
-                          {transaction.description}
+                          {transaction.title}
                         </p>
+                        {transaction.description && (
+                          <p className="text-sm text-zinc-500 truncate -mt-0.5">
+                            {transaction.description}
+                          </p>
+                        )}
                         <div className="flex items-center gap-2 mt-1">
                           <p className="text-xs text-zinc-400">
                             {format(new Date(transaction.date), 'MMM d, yyyy')}
