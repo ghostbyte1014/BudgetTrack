@@ -110,9 +110,9 @@ export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="budget" className="text-zinc-200">Amount (USD)</Label>
+                <Label htmlFor="budget" className="text-zinc-200">Amount (PHP)</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">₱</span>
                   <Input
                     id="budget"
                     type="number"

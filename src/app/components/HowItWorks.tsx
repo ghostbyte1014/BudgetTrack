@@ -145,11 +145,11 @@ export function HowItWorks() {
                 January
               </h4>
               <div className="space-y-1 text-sm">
-                <p className="text-zinc-400">Base Budget: <span className="text-white">$3,000</span></p>
-                <p className="text-zinc-400">Fixed Costs: <span className="text-white">$1,400</span></p>
-                <p className="text-zinc-400">Actual Spending: <span className="text-white">$1,200</span></p>
+                <p className="text-zinc-400">Base Budget: <span className="text-white">₱3,000</span></p>
+                <p className="text-zinc-400">Fixed Costs: <span className="text-white">₱1,400</span></p>
+                <p className="text-zinc-400">Actual Spending: <span className="text-white">₱1,200</span></p>
                 <p className="text-emerald-500 font-medium mt-2">
-                  ✓ Net Result: +$400 (Surplus)
+                  ✓ Net Result: +₱400 (Surplus)
                 </p>
               </div>
             </div>
@@ -160,16 +160,16 @@ export function HowItWorks() {
                 February
               </h4>
               <div className="space-y-1 text-sm">
-                <p className="text-zinc-400">Base Budget: <span className="text-white">$3,000</span></p>
-                <p className="text-emerald-500">Carry-Over: <span className="text-emerald-500">+$400</span></p>
-                <p className="text-zinc-400">Opening Balance: <span className="text-white font-bold">$3,400</span></p>
+                <p className="text-zinc-400">Base Budget: <span className="text-white">₱3,000</span></p>
+                <p className="text-emerald-500">Carry-Over: <span className="text-emerald-500">+₱400</span></p>
+                <p className="text-zinc-400">Opening Balance: <span className="text-white font-bold">₱3,400</span></p>
               </div>
             </div>
 
             <div className="p-4 bg-zinc-800/50 rounded-lg">
               <p className="text-sm text-zinc-300">
-                <strong className="text-white">The benefit:</strong> Because you saved $400 in January, 
-                you now have $3,400 to work with in February. Your daily spendable amount increases, 
+                <strong className="text-white">The benefit:</strong> Because you saved ₱400 in January, 
+                you now have ₱3,400 to work with in February. Your daily spendable amount increases, 
                 giving you more flexibility while staying on track.
               </p>
             </div>

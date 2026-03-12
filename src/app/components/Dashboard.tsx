@@ -108,7 +108,7 @@ export function Dashboard() {
                   </p>
                   <p className={`text-2xl font-bold ${carryOverFromLastMonth > 0 ? 'text-emerald-500' : 'text-rose-500'
                     }`}>
-                    {carryOverFromLastMonth > 0 ? '+' : ''}${Math.abs(carryOverFromLastMonth).toLocaleString()}
+                    {carryOverFromLastMonth > 0 ? '+' : ''}₱{Math.abs(carryOverFromLastMonth).toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -139,12 +139,12 @@ export function Dashboard() {
         <CardContent>
           <div className="text-center">
             <div className={`text-7xl font-bold mb-4 tracking-tighter ${financialMode === 'recovery' ? 'text-zinc-600' : goalColors.amount}`}>
-              ${Math.abs(dailySpendable).toFixed(2)}
+              ₱{Math.abs(dailySpendable).toFixed(2)}
             </div>
             {financialMode === 'recovery' ? (
               <div className="space-y-2 mt-4 max-w-sm mx-auto">
                 <p className="text-rose-500 text-sm font-medium">
-                  Earn or save <span className="font-bold">${deficitTotal.toFixed(2)}</span> more to restore your Daily Pulse.
+                  Earn or save <span className="font-bold">₱{deficitTotal.toFixed(2)}</span> more to restore your Daily Pulse.
                 </p>
                 <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
                   <div className="h-full bg-rose-500 w-full animate-pulse" />
@@ -179,7 +179,7 @@ export function Dashboard() {
             <div className="flex justify-between text-sm mb-2">
               <span className="text-zinc-400">Used</span>
               <span className="text-white font-medium">
-                ${totalUsed.toLocaleString()} / ${totalBudget.toLocaleString()}
+                ₱{totalUsed.toLocaleString()} / ₱{totalBudget.toLocaleString()}
               </span>
             </div>
             <Progress
@@ -197,7 +197,7 @@ export function Dashboard() {
               <p className="text-xs text-zinc-400 mb-1">Projected Carry-Over</p>
               <p className={`text-xl font-bold ${projectedCarryOver > 0 ? (primaryGoal === 'Save more' ? 'text-emerald-500' : goalColors.icon) : 'text-rose-500'
                 }`}>
-                {projectedCarryOver > 0 ? '+' : ''}${projectedCarryOver.toLocaleString()}
+                {projectedCarryOver > 0 ? '+' : ''}₱{projectedCarryOver.toLocaleString()}
               </p>
             </div>
             <div>
@@ -227,7 +227,7 @@ export function Dashboard() {
                 <DollarSign className="w-5 h-5 text-blue-500" />
               </div>
               <p className="text-2xl font-bold text-white">
-                ${baseBalance.toLocaleString()}
+                ₱{baseBalance.toLocaleString()}
               </p>
             </div>
           </CardContent>
@@ -244,7 +244,7 @@ export function Dashboard() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-white">
-                  ${totalBudgetPool.toLocaleString()}
+                  ₱{totalBudgetPool.toLocaleString()}
                 </p>
                 <p className="text-xs text-zinc-500">Base + Inherited</p>
               </div>
@@ -263,7 +263,7 @@ export function Dashboard() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-white">
-                  ${totalIncome.toLocaleString()}
+                  ₱{totalIncome.toLocaleString()}
                 </p>
                 <p className="text-xs text-zinc-500">This Month</p>
               </div>
@@ -281,7 +281,7 @@ export function Dashboard() {
                 <DollarSign className="w-5 h-5 text-orange-500" />
               </div>
               <p className="text-2xl font-bold text-white">
-                ${totalFixedCosts.toLocaleString()}
+                ₱{totalFixedCosts.toLocaleString()}
               </p>
             </div>
           </CardContent>
@@ -297,7 +297,7 @@ export function Dashboard() {
                 <DollarSign className="w-5 h-5 text-rose-500" />
               </div>
               <p className="text-2xl font-bold text-white">
-                ${totalSpentThisMonth.toLocaleString()}
+                ₱{totalSpentThisMonth.toLocaleString()}
               </p>
             </div>
           </CardContent>

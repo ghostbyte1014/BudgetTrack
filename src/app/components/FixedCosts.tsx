@@ -159,7 +159,7 @@ export function FixedCosts() {
               <div>
                 <p className="text-sm text-zinc-400 mb-1">Total Fixed Costs</p>
                 <p className="text-4xl font-bold text-orange-500">
-                  ${totalFixedCosts.toLocaleString()}
+                  ₱{totalFixedCosts.toLocaleString()}
                 </p>
               </div>
               <Badge 
@@ -174,7 +174,7 @@ export function FixedCosts() {
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-zinc-400">Remaining for variable expenses</span>
                 <span className="text-white font-medium">
-                  ${remainingBudget.toLocaleString()}
+                  ₱{remainingBudget.toLocaleString()}
                 </span>
               </div>
               <div className="w-full bg-zinc-800 rounded-full h-2">
@@ -235,7 +235,7 @@ export function FixedCosts() {
                     </div>
                     <div className="flex items-center gap-4">
                       <p className="text-lg font-bold text-orange-500">
-                        ${cost.amount.toFixed(2)}
+                        ₱{cost.amount.toFixed(2)}
                       </p>
                       <Button
                         variant="ghost"

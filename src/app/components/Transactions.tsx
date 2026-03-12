@@ -191,7 +191,7 @@ export function Transactions() {
                       <SelectItem value="none">Select...</SelectItem>
                       {fixedCosts.map(cost => (
                         <SelectItem key={cost.id} value={cost.id} disabled={cost.isSatisfied}>
-                          {cost.name} (${cost.amount}) {cost.isSatisfied ? '(Already Paid)' : ''}
+                          {cost.name} (₱{cost.amount}) {cost.isSatisfied ? '(Already Paid)' : ''}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -330,10 +330,10 @@ export function Transactions() {
                 return (
                   <div
                     key={transaction.id}
-                    className="flex items-center justify-between p-4 bg-[#09090b] rounded-lg border border-zinc-800 hover:border-zinc-700 transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-[#09090b] rounded-lg border border-zinc-800 hover:border-zinc-700 transition-colors gap-4"
                   >
-                    <div className="flex items-center gap-4 flex-1">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                    <div className="flex items-start sm:items-center gap-4 flex-1 min-w-0">
+                      <div className={`w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center ${
                         transaction.type === 'income' 
                           ? 'bg-emerald-500/20' 
                           : 'bg-rose-500/20'
@@ -345,15 +345,15 @@ export function Transactions() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-white font-medium truncate">
+                        <p className="text-white font-medium break-words">
                           {transaction.title}
                         </p>
                         {transaction.description && (
-                          <p className="text-sm text-zinc-500 truncate -mt-0.5">
+                          <p className="text-sm text-zinc-500 break-words -mt-0.5">
                             {transaction.description}
                           </p>
                         )}
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
                           <p className="text-xs text-zinc-400">
                             {format(new Date(transaction.date), 'MMM d, yyyy')}
                           </p>
@@ -362,17 +362,17 @@ export function Transactions() {
                           </Badge>
                           {dailyImpact > 0 && (
                             <Badge variant="outline" className="text-xs border-rose-500/50 text-rose-500">
-                              Daily Impact: -${dailyImpact.toFixed(2)}
+                              Daily Impact: -₱{dailyImpact.toFixed(2)}
                             </Badge>
                           )}
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-zinc-800/50">
                       <p className={`text-lg font-bold ${
                         transaction.type === 'income' ? 'text-emerald-500' : 'text-rose-500'
                       }`}>
-                        {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                        {transaction.type === 'income' ? '+' : '-'}₱{transaction.amount.toFixed(2)}
                       </p>
                       <Button
                         variant="ghost"

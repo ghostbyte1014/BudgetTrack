@@ -87,7 +87,7 @@ export function MonthlyHistory() {
                             <div className="flex justify-between text-sm">
                               <span className="text-zinc-500">Base Budget</span>
                               <span className="text-white font-medium">
-                                ${record.baseBalance.toLocaleString()}
+                                ₱{record.baseBalance.toLocaleString()}
                               </span>
                             </div>
                             
@@ -95,7 +95,7 @@ export function MonthlyHistory() {
                               <div className="flex justify-between text-sm">
                                 <span className="text-zinc-500">Carry-Over</span>
                                 <span className={record.carryOver > 0 ? 'text-emerald-500' : 'text-rose-500'}>
-                                  {record.carryOver > 0 ? '+' : ''}${record.carryOver.toLocaleString()}
+                                  {record.carryOver > 0 ? '+' : ''}₱{record.carryOver.toLocaleString()}
                                 </span>
                               </div>
                             )}
@@ -104,7 +104,7 @@ export function MonthlyHistory() {
                               <div className="flex justify-between text-sm">
                                 <span className="text-zinc-500">Income</span>
                                 <span className="text-emerald-500">
-                                  +${record.totalIncome.toLocaleString()}
+                                  +₱{record.totalIncome.toLocaleString()}
                                 </span>
                               </div>
                             )}
@@ -112,7 +112,7 @@ export function MonthlyHistory() {
                             <div className="flex justify-between text-sm pt-2 border-t border-zinc-800">
                               <span className="text-zinc-400 font-medium">Total Available</span>
                               <span className="text-white font-bold">
-                                ${inputTotal.toLocaleString()}
+                                ₱{inputTotal.toLocaleString()}
                               </span>
                             </div>
                           </div>
@@ -129,7 +129,7 @@ export function MonthlyHistory() {
                             <div className="flex justify-between text-sm">
                               <span className="text-zinc-500">Total Expenses</span>
                               <span className="text-rose-500">
-                                -${record.totalExpenses.toLocaleString()}
+                                -₱{record.totalExpenses.toLocaleString()}
                               </span>
                             </div>
                             
@@ -145,7 +145,7 @@ export function MonthlyHistory() {
                               <span className={`font-bold ${
                                 isPositive ? 'text-emerald-500' : 'text-rose-500'
                               }`}>
-                                {isPositive ? '+' : ''}${record.netResult.toLocaleString()}
+                                {isPositive ? '+' : ''}₱{record.netResult.toLocaleString()}
                               </span>
                             </div>
                           </div>

@@ -93,10 +93,10 @@ export function Analytics() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-white">
-                  ${actualDailyBurn.toFixed(2)}/day
+                  ₱{actualDailyBurn.toFixed(2)}/day
                 </p>
                 <p className="text-xs text-zinc-500 mt-1">
-                  Target: ${dailyIdealSpend.toFixed(2)}/day
+                  Target: ₱{dailyIdealSpend.toFixed(2)}/day
                 </p>
               </div>
               <Badge 
@@ -121,7 +121,7 @@ export function Analytics() {
                 <p className={`text-2xl font-bold ${
                   projectedEndBalance > 0 ? 'text-emerald-500' : 'text-rose-500'
                 }`}>
-                  {projectedEndBalance > 0 ? '+' : ''}${projectedEndBalance.toFixed(0)}
+                  {projectedEndBalance > 0 ? '+' : ''}₱{projectedEndBalance.toFixed(0)}
                 </p>
                 <p className="text-xs text-zinc-500 mt-1">
                   Estimated carry-over
@@ -187,7 +187,7 @@ export function Analytics() {
                 <YAxis 
                   stroke="#71717a"
                   tick={{ fill: '#71717a', fontSize: 12 }}
-                  tickFormatter={(value) => `$${value}`}
+                  tickFormatter={(value) => `₱${value}`}
                 />
                 <Tooltip 
                   contentStyle={{ 
@@ -196,7 +196,7 @@ export function Analytics() {
                     borderRadius: '8px',
                     color: '#fff'
                   }}
-                  formatter={(value: any) => [`$${value.toFixed(2)}`, '']}
+                  formatter={(value: any) => [`₱${value.toFixed(2)}`, '']}
                   labelStyle={{ color: '#a1a1aa' }}
                 />
                 <Legend 
@@ -253,7 +253,7 @@ export function Analytics() {
                 <YAxis 
                   stroke="#71717a"
                   tick={{ fill: '#71717a', fontSize: 12 }}
-                  tickFormatter={(value) => `$${value}`}
+                  tickFormatter={(value) => `₱${value}`}
                 />
                 <Tooltip 
                   contentStyle={{ 
@@ -263,7 +263,7 @@ export function Analytics() {
                     color: '#fff'
                   }}
                   formatter={(value: any, name: string, props: any) => [
-                    `$${value.toFixed(2)} (${props.payload.percentage}%)`,
+                    `₱${value.toFixed(2)} (${props.payload.percentage}%)`,
                     'Amount'
                   ]}
                 />

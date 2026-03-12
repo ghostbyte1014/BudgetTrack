@@ -259,7 +259,7 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
       await supabase.from('notifications').insert({
         user_id: user.id,
         title: 'Deficit Alert',
-        message: `Your recent transaction "${transaction.title}" pushed your balance to -$${Math.abs(projectedPool).toFixed(2)}. Adjust spending to recover!`,
+        message: `Your recent transaction "${transaction.title}" pushed your balance to -₱${Math.abs(projectedPool).toFixed(2)}. Adjust spending to recover!`,
         type: 'warning'
       });
     }
