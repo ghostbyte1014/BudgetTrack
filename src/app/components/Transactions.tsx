@@ -31,7 +31,8 @@ export function Transactions() {
     totalFixedCosts,
     fixedCosts,
     markFixedCostSatisfied,
-    metrics
+    metrics,
+    currencySymbol,
   } = useBudget();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -191,7 +192,7 @@ export function Transactions() {
                       <SelectItem value="none">Select...</SelectItem>
                       {fixedCosts.map(cost => (
                         <SelectItem key={cost.id} value={cost.id} disabled={cost.isSatisfied}>
-                          {cost.name} (₱{cost.amount}) {cost.isSatisfied ? '(Already Paid)' : ''}
+                          {cost.name} ({currencySymbol}{cost.amount}) {cost.isSatisfied ? '(Already Paid)' : ''}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -377,7 +378,7 @@ export function Transactions() {
                               </Badge>
                               {dailyImpact > 0 && (
                                 <Badge variant="outline" className="text-xs border-rose-500/50 text-rose-500">
-                                  Daily Impact: -₱{dailyImpact.toFixed(2)}
+                                  Daily Impact: -{currencySymbol}{dailyImpact.toFixed(2)}
                                 </Badge>
                               )}
                             </div>
@@ -387,7 +388,7 @@ export function Transactions() {
                           <p className={`text-lg font-bold ${
                             transaction.type === 'income' ? 'text-emerald-500' : 'text-rose-500'
                           }`}>
-                            {transaction.type === 'income' ? '+' : '-'}₱{transaction.amount.toFixed(2)}
+                            {transaction.type === 'income' ? '+' : '-'}{currencySymbol}{transaction.amount.toFixed(2)}
                           </p>
                           <Button
                             variant="ghost"

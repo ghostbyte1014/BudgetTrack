@@ -7,11 +7,15 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Bell, CheckCircle2, AlertTriangle, Info, Trash2 } from 'lucide-react';
 
+import { DailySummaryModal } from './DailySummaryModal';
+
 export function NotificationsPage() {
   const { unreadCount, refetch } = useBudgetSystem();
   const { user } = useBudget();
   const [notifications, setNotifications] = useState<SystemNotification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedNotificationId, setSelectedNotificationId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchUserNotifications = async () => {
     if (!user?.id) return;
@@ -130,7 +134,13 @@ export function NotificationsPage() {
                     {getIcon(notification.type)}
                   </div>
                   
-                  <div className="flex-1 space-y-1">
+                    <div className="flex-1 space-y-1 cursor-pointer" onClick={() => {
+                      if (notification.type === 'summary') {
+                        setSelectedNotificationId(notification.id);
+                        setIsModalOpen(true);
+                        markAsRead(notification.id);
+                      }
+                    }}>
                     <div className="flex items-center justify-between">
                       <h4 className={`font-semibold ${notification.is_read ? 'text-zinc-300' : 'text-white'}`}>
                         {notification.title}
@@ -173,6 +183,15 @@ export function NotificationsPage() {
           )}
         </CardContent>
       </Card>
+
+      <DailySummaryModal
+        notificationId={selectedNotificationId || ''}
+        isOpen={isModalOpen}
+        onOpenChange={(open) => {
+          setIsModalOpen(open);
+          if (!open) setSelectedNotificationId(null);
+        }}
+      />
     </div>
   );
 }

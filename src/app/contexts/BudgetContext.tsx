@@ -40,6 +40,8 @@ interface BudgetContextType {
   // Budget settings
   baseBalance: number;
   setBaseBalance: (amount: number) => void;
+  currencySymbol: string;
+  setCurrencySymbol: (symbol: string) => void;
   primaryGoal: string;
   setPrimaryGoal: (goal: string) => void;
   
@@ -96,6 +98,7 @@ const BudgetContext = createContext<BudgetContextType | undefined>(undefined);
 export function BudgetProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<{ id?: string, name: string; email: string } | null>(null);
   const [baseBalance, setBaseBalance] = useState(3000);
+  const [currencySymbol, setCurrencySymbol] = useState('$');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [fixedCosts, setFixedCosts] = useState<FixedCost[]>([]);
   const [monthlyRecords, setMonthlyRecords] = useState<MonthlyRecord[]>([]);
@@ -140,7 +143,7 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
       const [transRes, costsRes, profileRes, notifRes, recordsRes] = await Promise.all([
         supabase.from('transactions').select('*').eq('user_id', user.id).order('date', { ascending: false }),
         supabase.from('fixed_costs').select('*').eq('user_id', user.id).order('due_date', { ascending: true }),
-        supabase.from('profiles').select('base_balance, primary_goal').eq('id', user.id).single(),
+        supabase.from('profiles').select('base_balance, primary_goal, currency_symbol').eq('id', user.id).single(),
         supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_read', false),
         supabase.from('monthly_records').select('*').eq('user_id', user.id).order('month', { ascending: false })
       ]);
@@ -172,6 +175,7 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
       if (profileRes.data) {
         setBaseBalance(Number(profileRes.data.base_balance));
         setPrimaryGoal(profileRes.data.primary_goal);
+        setCurrencySymbol(profileRes.data.currency_symbol || '$');
       }
       if (notifRes.count !== null) setUnreadCount(notifRes.count);
       if (recordsRes.data) {
@@ -277,7 +281,7 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
       await supabase.from('notifications').insert({
         user_id: user.id,
         title: 'Deficit Alert',
-        message: `Your recent transaction "${transaction.title}" pushed your balance to -₱${Math.abs(projectedPool).toFixed(2)}. Adjust spending to recover!`,
+        message: `Your recent transaction "${transaction.title}" pushed your balance to -${currencySymbol}${Math.abs(projectedPool).toFixed(2)}. Adjust spending to recover!`,
         type: 'warning'
       });
     }
@@ -471,6 +475,8 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
         logout,
         baseBalance,
         setBaseBalance,
+        currencySymbol,
+        setCurrencySymbol,
         primaryGoal,
         setPrimaryGoal,
         transactions,

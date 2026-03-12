@@ -29,8 +29,7 @@ dist-ssr
 !.env.example
 
 # Database schemas and data
-seed_sample_data.sql
-supabase_schema.sql
+*.sql
 
 # Planning, documentation, and testing information
 System_Architecture_and_Overview_Report.md

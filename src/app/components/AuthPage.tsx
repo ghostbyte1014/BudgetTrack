@@ -16,6 +16,7 @@ export function AuthPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [baseBalance, setBaseBalance] = useState('3000');
+  const [currencySymbol, setCurrencySymbol] = useState('$');
   const [primaryGoal, setPrimaryGoal] = useState('Save more');
   const [isLogin, setIsLogin] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
@@ -49,7 +50,8 @@ export function AuthPage() {
             data: {
               name: name,
               baseBalance: parseFloat(baseBalance) || 3000,
-              primaryGoal: primaryGoal
+              primaryGoal: primaryGoal,
+              currencySymbol: currencySymbol
             }
           }
         });
@@ -137,6 +139,22 @@ export function AuthPage() {
                       <option value="Save more">Save more</option>
                       <option value="Stop overspending">Stop overspending</option>
                       <option value="Track debt">Track debt</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="currencySymbol" className="text-zinc-200">Preferred Currency</Label>
+                    <select
+                      id="currencySymbol"
+                      value={currencySymbol}
+                      onChange={(e) => setCurrencySymbol(e.target.value)}
+                      className="w-full h-10 px-3 bg-[#09090b] border border-zinc-700 text-white rounded-md text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      required={!isLogin}
+                    >
+                      <option value="$">$ (Dollar)</option>
+                      <option value="₱">₱ (Peso)</option>
+                      <option value="€">€ (Euro)</option>
+                      <option value="£">£ (Pound)</option>
+                      <option value="¥">¥ (Yen)</option>
                     </select>
                   </div>
                 </>

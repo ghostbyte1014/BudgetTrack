@@ -21,6 +21,7 @@ export function Analytics() {
     weeklyBurnRate,
     financialRunway,
     spendingVelocity,
+    currencySymbol,
   } = useBudget();
   const [isMetricsExpanded, setIsMetricsExpanded] = useState(true);
 
@@ -206,13 +207,13 @@ export function Analytics() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xl sm:text-2xl font-bold text-white whitespace-nowrap overflow-hidden text-ellipsis">
-                    ₱{actualDailyBurn.toFixed(2)}<span className="text-sm font-normal text-zinc-500">/day</span>
+                    {currencySymbol}{actualDailyBurn.toFixed(2)}<span className="text-sm font-normal text-zinc-500">/day</span>
                   </p>
                   <p className="text-xs text-zinc-500 mt-1">
-                    Target: ₱{dailyIdealSpend.toFixed(2)}/day
+                    Target: {currencySymbol}{dailyIdealSpend.toFixed(2)}/day
                   </p>
                   <p className="text-[10px] text-zinc-600 mt-2 italic">
-                    *Excludes recurring bills (₱{totalFixedCosts.toLocaleString()})
+                    *Excludes recurring bills ({currencySymbol}{totalFixedCosts.toLocaleString()})
                   </p>
                 </div>
                 <Badge
@@ -236,7 +237,7 @@ export function Analytics() {
                 <div>
                   <p className={`text-2xl font-bold ${projectedEndBalance > 0 ? 'text-emerald-500' : 'text-rose-500'
                     }`}>
-                    {projectedEndBalance > 0 ? '+' : ''}₱{projectedEndBalance.toFixed(0)}
+                    {projectedEndBalance > 0 ? '+' : ''}{currencySymbol}{projectedEndBalance.toFixed(0)}
                   </p>
                   <p className="text-xs text-zinc-500 mt-1">
                     Estimated carry-over
@@ -314,7 +315,7 @@ export function Analytics() {
                 <YAxis
                   stroke="#71717a"
                   tick={{ fill: '#71717a', fontSize: 12 }}
-                  tickFormatter={(value) => `₱${value}`}
+                  tickFormatter={(value) => `${currencySymbol}${value}`}
                 />
                 <Tooltip
                   contentStyle={{
@@ -323,7 +324,7 @@ export function Analytics() {
                     borderRadius: '8px',
                     color: '#fff'
                   }}
-                  formatter={(value: any) => [`₱${value.toFixed(2)}`, '']}
+                  formatter={(value: any) => [`${currencySymbol}${value.toFixed(2)}`, '']}
                   labelStyle={{ color: '#a1a1aa' }}
                 />
                 <Legend
@@ -381,7 +382,7 @@ export function Analytics() {
                   <YAxis
                     stroke="#71717a"
                     tick={{ fill: '#71717a', fontSize: 12 }}
-                    tickFormatter={(value) => `₱${value}`}
+                    tickFormatter={(value) => `${currencySymbol}${value}`}
                   />
                   <Tooltip
                     contentStyle={{
@@ -391,7 +392,7 @@ export function Analytics() {
                       color: '#fff'
                     }}
                     formatter={(value: any, name: string, props: any) => [
-                      `₱${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${props.payload.percentage}%)`,
+                      `${currencySymbol}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${props.payload.percentage}%)`,
                       'Amount'
                     ]}
                   />
@@ -445,7 +446,7 @@ export function Analytics() {
               <div>
                 <p className="text-white font-medium text-sm">Spending Above Target</p>
                 <p className="text-sm text-zinc-400 mt-1">
-                  You're spending ₱{(actualDailyBurn - dailyIdealSpend).toFixed(2)} more per day than your ideal rate.
+                  You're spending {currencySymbol}{(actualDailyBurn - dailyIdealSpend).toFixed(2)} more per day than your ideal rate.
                   Consider reducing discretionary expenses to stay on track.
                 </p>
               </div>
@@ -458,7 +459,7 @@ export function Analytics() {
               <div>
                 <p className="text-white font-medium text-sm">Great Job!</p>
                 <p className="text-sm text-zinc-400 mt-1">
-                  You're on track to carry over ₱{projectedCarryOver.toFixed(0)} to next month.
+                  You're on track to carry over {currencySymbol}{projectedCarryOver.toFixed(0)} to next month.
                   Keep up the good work!
                 </p>
               </div>
@@ -472,7 +473,7 @@ export function Analytics() {
                 <p className="text-white font-medium text-sm">Top Spending Category</p>
                 <p className="text-sm text-zinc-400 mt-1">
                   <span className="text-white font-medium">{categoryChartData[0].category}</span> accounts for{' '}
-                  {categoryChartData[0].percentage}% of your spending (₱{categoryChartData[0].amount.toFixed(2)}).
+                  {categoryChartData[0].percentage}% of your spending ({currencySymbol}{categoryChartData[0].amount.toFixed(2)}).
                 </p>
               </div>
             </div>

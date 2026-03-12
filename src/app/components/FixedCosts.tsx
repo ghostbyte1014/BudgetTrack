@@ -21,7 +21,7 @@ const categories = [
 ];
 
 export function FixedCosts() {
-  const { fixedCosts, addFixedCost, deleteFixedCost, totalFixedCosts, metrics } = useBudget();
+  const { fixedCosts, addFixedCost, deleteFixedCost, totalFixedCosts, metrics, currencySymbol } = useBudget();
   
   const currentMonthPool = metrics ? metrics.absolute_balance + totalFixedCosts : 0;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -159,7 +159,7 @@ export function FixedCosts() {
               <div>
                 <p className="text-sm text-zinc-400 mb-1">Total Fixed Costs</p>
                 <p className="text-4xl font-bold text-orange-500">
-                  ₱{totalFixedCosts.toLocaleString()}
+                  {currencySymbol}{totalFixedCosts.toLocaleString()}
                 </p>
               </div>
               <Badge 
@@ -174,7 +174,7 @@ export function FixedCosts() {
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-zinc-400">Remaining for variable expenses</span>
                 <span className="text-white font-medium">
-                  ₱{remainingBudget.toLocaleString()}
+                  {currencySymbol}{remainingBudget.toLocaleString()}
                 </span>
               </div>
               <div className="w-full bg-zinc-800 rounded-full h-2">
@@ -247,7 +247,7 @@ export function FixedCosts() {
                     </div>
                     <div className="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 border-zinc-800/50 pt-3 sm:pt-0">
                       <p className="text-lg font-bold text-orange-500">
-                        ₱{cost.amount.toFixed(2)}
+                        {currencySymbol}{cost.amount.toFixed(2)}
                       </p>
                       <Button
                         variant="ghost"

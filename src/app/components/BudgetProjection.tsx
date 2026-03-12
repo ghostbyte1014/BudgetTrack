@@ -7,7 +7,7 @@ import { addDays, format } from 'date-fns';
 import { Button } from './ui/button';
 
 export function BudgetProjection() {
-  const { dailySpendableProjection, dailySpendable, financialMode } = useBudget();
+  const { dailySpendableProjection, dailySpendable, financialMode, currencySymbol } = useBudget();
   const [isExpanded, setIsExpanded] = useState(false);
 
   if (financialMode === 'recovery' || dailySpendable <= 0) {
@@ -24,7 +24,7 @@ export function BudgetProjection() {
               The "No Spend" Benefit
             </CardTitle>
             <CardDescription className="text-zinc-400">
-              Future daily limits if you spend ₱0 today
+              Future daily limits if you spend {currencySymbol}0 today
             </CardDescription>
           </div>
           <Button 
@@ -60,10 +60,10 @@ export function BudgetProjection() {
                   
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <p className="text-lg font-bold text-emerald-400">₱{amount.toFixed(2)}</p>
+                      <p className="text-lg font-bold text-emerald-400">{currencySymbol}{amount.toFixed(2)}</p>
                       <p className="text-[10px] text-emerald-500/70 flex items-center justify-end gap-1">
                         <ArrowRight className="w-2 h-2" />
-                        +₱{increase.toFixed(2)} / day
+                        +{currencySymbol}{increase.toFixed(2)} / day
                       </p>
                     </div>
                   </div>

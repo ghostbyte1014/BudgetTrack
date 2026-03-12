@@ -15,7 +15,8 @@ export function MonthlyHistory() {
     carryOverFromLastMonth,
     currentMonthPool,
     totalFixedCosts,
-    transactions
+    transactions,
+    currencySymbol
   } = useBudget();
 
   // Create a synthetic "Live" record for the current month
@@ -135,7 +136,7 @@ export function MonthlyHistory() {
                             <div className="flex justify-between text-sm">
                               <span className="text-zinc-500">Base Budget</span>
                               <span className="text-white font-medium">
-                                ₱{record.baseBalance.toLocaleString()}
+                                {currencySymbol}{record.baseBalance.toLocaleString()}
                               </span>
                             </div>
 
@@ -143,7 +144,7 @@ export function MonthlyHistory() {
                               <div className="flex justify-between text-sm">
                                 <span className="text-zinc-500">Carry-Over</span>
                                 <span className={record.carryOver > 0 ? 'text-emerald-500' : 'text-rose-500'}>
-                                  {record.carryOver > 0 ? '+' : ''}₱{record.carryOver.toLocaleString()}
+                                  {record.carryOver > 0 ? '+' : ''}{currencySymbol}{record.carryOver.toLocaleString()}
                                 </span>
                               </div>
                             )}
@@ -152,7 +153,7 @@ export function MonthlyHistory() {
                               <div className="flex justify-between text-sm">
                                 <span className="text-zinc-500">Income</span>
                                 <span className="text-emerald-500">
-                                  +₱{record.totalIncome.toLocaleString()}
+                                  +{currencySymbol}{record.totalIncome.toLocaleString()}
                                 </span>
                               </div>
                             )}
@@ -160,7 +161,7 @@ export function MonthlyHistory() {
                             <div className="flex justify-between text-sm pt-2 border-t border-zinc-800">
                               <span className="text-zinc-400 font-medium">Total Available</span>
                               <span className="text-white font-bold">
-                                ₱{inputTotal.toLocaleString()}
+                                {currencySymbol}{inputTotal.toLocaleString()}
                               </span>
                             </div>
                           </div>
@@ -177,7 +178,7 @@ export function MonthlyHistory() {
                             <div className="flex justify-between text-sm">
                               <span className="text-zinc-500">Expenses</span>
                               <span className="text-rose-500">
-                                -₱{record.totalExpenses.toLocaleString()}
+                                -{currencySymbol}{record.totalExpenses.toLocaleString()}
                               </span>
                             </div>
 
@@ -185,7 +186,7 @@ export function MonthlyHistory() {
                               <div className="flex justify-between text-sm">
                                 <span className="text-zinc-500">Reserved Fixed Costs</span>
                                 <span className="text-orange-500">
-                                  -₱{((record as any).fixedCosts || totalFixedCosts).toLocaleString()}
+                                  -{currencySymbol}{((record as any).fixedCosts || totalFixedCosts).toLocaleString()}
                                 </span>
                               </div>
                             )}
@@ -203,7 +204,7 @@ export function MonthlyHistory() {
                               <span className="text-zinc-400 font-medium">Net Result</span>
                               <span className={`font-bold ${isPositive ? 'text-emerald-500' : 'text-rose-500'
                                 }`}>
-                                {isPositive ? '+' : ''}₱{record.netResult.toLocaleString()}
+                                {isPositive ? '+' : ''}{currencySymbol}{record.netResult.toLocaleString()}
                               </span>
                             </div>
                           </div>

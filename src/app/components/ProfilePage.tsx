@@ -5,15 +5,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { User, Wallet, Target, Loader2, Save } from 'lucide-react';
+import { User, Wallet, Target, Loader2, Save, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function ProfilePage() {
-  const { user, login, baseBalance, setBaseBalance, primaryGoal, setPrimaryGoal } = useBudget();
+  const { user, login, baseBalance, setBaseBalance, currencySymbol, setCurrencySymbol, primaryGoal, setPrimaryGoal } = useBudget();
   
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [budget, setBudget] = useState('');
+  const [currency, setCurrency] = useState('$');
   const [goal, setGoal] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -23,8 +24,9 @@ export function ProfilePage() {
       setEmail(user.email);
     }
     setBudget(baseBalance.toString());
+    setCurrency(currencySymbol);
     setGoal(primaryGoal);
-  }, [user, baseBalance, primaryGoal]);
+  }, [user, baseBalance, primaryGoal, currencySymbol]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,13 +41,14 @@ export function ProfilePage() {
       // Update local storage context temporarily for fast rendering
       login(name, email, user?.id);
       setBaseBalance(numBudget);
+      setCurrencySymbol(currency);
       setPrimaryGoal(goal);
 
       // Persist to Supabase
       if (user?.id) {
         const { error } = await supabase
           .from('profiles')
-          .update({ name, base_balance: numBudget, primary_goal: goal })
+          .update({ name, base_balance: numBudget, primary_goal: goal, currency_symbol: currency })
           .eq('id', user.id);
 
         if (error) throw error;
@@ -110,7 +113,7 @@ export function ProfilePage() {
               <div className="space-y-2">
                 <Label htmlFor="baseBalance" className="text-zinc-200 flex items-center gap-2">
                   <Wallet className="w-4 h-4 text-emerald-500" />
-                  Monthly Base Budget (₱)
+                  Monthly Base Budget ({currency})
                 </Label>
                 <Input
                   id="baseBalance"
@@ -138,6 +141,26 @@ export function ProfilePage() {
                   <option value="Save more">Save more</option>
                   <option value="Stop overspending">Stop overspending</option>
                   <option value="Track debt">Track debt</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="currency" className="text-zinc-200 flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-amber-500" />
+                  Currency Symbol
+                </Label>
+                <select
+                  id="currency"
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                  className="w-full h-10 px-3 bg-[#09090b] border border-zinc-700 text-white rounded-md text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  required
+                >
+                  <option value="$">$ (Dollar)</option>
+                  <option value="₱">₱ (Peso)</option>
+                  <option value="€">€ (Euro)</option>
+                  <option value="£">£ (Pound)</option>
+                  <option value="¥">¥ (Yen)</option>
                 </select>
               </div>
             </div>

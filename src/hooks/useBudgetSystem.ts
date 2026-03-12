@@ -18,7 +18,7 @@ export interface SystemNotification {
   id: string;
   title: string;
   message: string;
-  type: 'info' | 'warning' | 'success';
+  type: 'info' | 'warning' | 'success' | 'summary';
   is_read: boolean;
   created_at: string;
 }
