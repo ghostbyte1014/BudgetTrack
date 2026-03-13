@@ -69,14 +69,14 @@ export function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className={`text-3xl font-bold mb-2 ${isRecoveryMode ? 'text-rose-500' : 'text-white'}`}>
             {isRecoveryMode ? 'Recovery Mode' : 'The Pulse'}
           </h1>
           <p className="text-zinc-400">{format(new Date(), 'MMMM d, yyyy')}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           {unreadCount > 0 && (
             <Badge variant="default" className="bg-blue-600 hover:bg-blue-700 text-white animate-pulse flex items-center gap-1">
               <Bell className="w-3 h-3" />
@@ -284,7 +284,7 @@ export function Dashboard() {
       </Card>
 
       {/* Budget Breakdown */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         <Card className="bg-[#18181b] border-zinc-800">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm text-zinc-400">Base Budget</CardTitle>

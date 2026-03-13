@@ -215,16 +215,42 @@ export function MonthlyHistory() {
                       <div className="mt-6 pt-4 border-t border-zinc-800">
                         <div className="flex items-center justify-between text-xs text-zinc-500 mb-2">
                           <span>Budget Utilization</span>
-                          <span>{((record.totalExpenses / inputTotal) * 100).toFixed(1)}%</span>
+                          <span>{(((record.totalExpenses + (record.fixedCosts || totalFixedCosts)) / inputTotal) * 100).toFixed(1)}%</span>
                         </div>
-                        <div className="w-full bg-zinc-800 rounded-full h-2">
+                        <div className="w-full bg-zinc-800 rounded-full h-3 overflow-hidden flex">
+                          {/* Fixed Costs - Orange */}
                           <div
-                            className={`h-2 rounded-full transition-all ${(record.totalExpenses / inputTotal) > 1
-                                ? 'bg-rose-500'
-                                : 'bg-emerald-500'
-                              }`}
-                            style={{ width: `${Math.min((record.totalExpenses / inputTotal) * 100, 100)}%` }}
+                            className="h-full bg-orange-500 transition-all duration-500"
+                            style={{ width: `${Math.min(((record.fixedCosts || totalFixedCosts) / inputTotal) * 100, 100)}%` }}
                           />
+                          {/* Expenses - Red */}
+                          <div
+                            className="h-full bg-rose-500 transition-all duration-500"
+                            style={{ width: `${Math.min((record.totalExpenses / inputTotal) * 100, Math.max(0, 100 - ((record.fixedCosts || totalFixedCosts) / inputTotal) * 100))}%` }}
+                          />
+                          {/* Balance - Green */}
+                          {isPositive && (
+                            <div
+                              className="h-full bg-emerald-500 transition-all duration-500"
+                              style={{ width: `${Math.max(0, 100 - (((record.totalExpenses + (record.fixedCosts || totalFixedCosts)) / inputTotal) * 100))}%` }}
+                            />
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4 mt-2">
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-2 h-2 rounded-full bg-orange-500" />
+                            <span className="text-[10px] text-zinc-500 uppercase">Fixed</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-2 h-2 rounded-full bg-rose-500" />
+                            <span className="text-[10px] text-zinc-500 uppercase">Expenses</span>
+                          </div>
+                          {isPositive && (
+                            <div className="flex items-center gap-1.5">
+                              <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                              <span className="text-[10px] text-zinc-500 uppercase">Balance</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </CardContent>

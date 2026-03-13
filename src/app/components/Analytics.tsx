@@ -23,7 +23,7 @@ export function Analytics() {
     spendingVelocity,
     currencySymbol,
   } = useBudget();
-  const [isMetricsExpanded, setIsMetricsExpanded] = useState(true);
+  const [isMetricsExpanded, setIsMetricsExpanded] = useState(false);
 
   // Calculate ideal spending path (linear)
   const today = new Date();
