@@ -29,6 +29,9 @@ export interface MonthlyRecord {
   totalIncome: number;
   totalExpenses: number;
   netResult: number;
+  disciplineScore?: number;
+  fixedCosts?: number;
+  isLive?: boolean;
   transactions: Transaction[];
 }
 
@@ -85,6 +88,11 @@ interface BudgetContextType {
   weeklyBurnRate: number;
   financialRunway: number | null;
   spendingVelocity: number;
+  spendingPace: {
+    label: string;
+    ratio: number;
+    color: string;
+  };
   budgetDisciplineScore: number;
   predictiveAlert: {
     message: string;
@@ -451,14 +459,14 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
     : null;
 
   // --- PHASE 6: SPENDING VELOCITY ---
-  const idealSpendingToDate = (totalMonthlyBudget / daysInMonth) * currentDay;
+  const idealSpendingToDate = (totalBudgetPool / daysInMonth) * currentDay;
   const spendingVelocity = idealSpendingToDate > 0 ? totalSpentThisMonth / idealSpendingToDate : 0;
 
   // --- PHASE 7: BUDGET DISCIPLINE SCORE ---
   let score = 100;
   // Penalty for overspending relative to budget
-  if (totalSpentThisMonth > totalMonthlyBudget) {
-    score -= Math.min(40, ((totalSpentThisMonth - totalMonthlyBudget) / totalMonthlyBudget) * 100);
+  if (totalSpentThisMonth > totalBudgetPool) {
+    score -= Math.min(40, ((totalSpentThisMonth - totalBudgetPool) / totalBudgetPool) * 100);
   }
   // Penalty for deficit days (simplified as current deficit)
   if (absoluteBalance < 0) score -= 20;
@@ -469,6 +477,24 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
   score += (paidBillsRatio - 0.5) * 20; // Up to +10 or -10
   
   const budgetDisciplineScore = Math.max(0, Math.min(100, score));
+
+  // --- PHASE 9: SPENDING PACE ---
+  const todaySpent = currentMonthTransactions
+    .filter(t => t.date === format(new Date(), 'yyyy-MM-dd') && t.type === 'expense' && !t.linked_fixed_cost_id)
+    .reduce((sum, t) => sum + t.amount, 0);
+  
+  const paceRatio = dailySpendable > 0 ? todaySpent / dailySpendable : (todaySpent > 0 ? 2 : 0);
+  
+  let spendingPace: BudgetContextType['spendingPace'];
+  if (paceRatio > 1.3) {
+    spendingPace = { label: 'Critical Overspending', ratio: paceRatio, color: 'text-red-600' };
+  } else if (paceRatio > 1.0) {
+    spendingPace = { label: 'Overspending', ratio: paceRatio, color: 'text-orange-500' };
+  } else if (paceRatio > 0.8) {
+    spendingPace = { label: 'On Pace', ratio: paceRatio, color: 'text-teal-500' };
+  } else {
+    spendingPace = { label: 'Under Pace', ratio: paceRatio, color: 'text-emerald-500' };
+  }
 
   // --- PHASE 8: PREDICTIVE OVERSPENDING ALERTS ---
   const projectedTotalSpending = averageDailySpend * daysInMonth;
@@ -523,6 +549,7 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
         weeklyBurnRate,
         financialRunway,
         spendingVelocity,
+        spendingPace,
         budgetDisciplineScore,
         predictiveAlert
       }}

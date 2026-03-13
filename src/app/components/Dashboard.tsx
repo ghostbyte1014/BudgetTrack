@@ -23,6 +23,8 @@ export function Dashboard() {
     projectedCarryOver,
     financialHealthState,
     safeSpendToday,
+    financialRunway,
+    spendingPace,
     predictiveAlert,
     currencySymbol,
   } = useBudget();
@@ -193,10 +195,11 @@ export function Dashboard() {
         </CardContent>
       </Card>
 
-      {/* Safe Spend Today - Secondary Gauge */}
-      <Card className="bg-zinc-900/50 border-zinc-800 shadow-sm">
-        <CardContent className="py-4">
-          <div className="flex items-center justify-between">
+      {/* Safe Spend Today & Behavioral Logic */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Safe Spend Today */}
+        <Card className="bg-zinc-900/50 border-zinc-800 shadow-sm col-span-1">
+          <CardContent className="py-4 h-full flex flex-col justify-center">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
                 <ShieldCheck className="w-5 h-5 text-blue-500" />
@@ -218,15 +221,57 @@ export function Dashboard() {
                 </div>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Health Status</p>
-              <p className={`text-sm font-semibold ${financialHealthState.color}`}>
-                {financialHealthState.message}
-              </p>
+          </CardContent>
+        </Card>
+
+        {/* Financial Runway */}
+        <Card className="bg-zinc-900/50 border-zinc-800 shadow-sm col-span-1">
+          <CardContent className="py-4 h-full flex flex-col justify-center">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-orange-500" />
+              </div>
+              <div>
+                <p className="text-xs text-zinc-400 font-medium">Financial Runway</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xl font-bold text-white">
+                    {financialRunway ? `${financialRunway} Days` : 'Infinite'}
+                  </p>
+                  <TooltipProvider>
+                    <Tooltip shadow-none>
+                      <TooltipTrigger>
+                        <Info className="w-3 h-3 text-zinc-500" />
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-zinc-800 border-zinc-700 text-zinc-300 text-xs max-w-xs">
+                        How many days your money will last at your current spending pace.
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        {/* Spending Pace */}
+        <Card className="bg-zinc-900/50 border-zinc-800 shadow-sm col-span-1">
+          <CardContent className="py-4 h-full flex flex-col justify-center">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center`}>
+                <Zap className={`w-5 h-5 ${spendingPace.color}`} />
+              </div>
+              <div>
+                <p className="text-xs text-zinc-400 font-medium">Spending Pace</p>
+                <div className="flex items-center gap-1">
+                  <p className={`text-sm font-bold ${spendingPace.color}`}>
+                    {spendingPace.label} ({spendingPace.ratio.toFixed(2)}x)
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Budget Projection Section */}
       <BudgetProjection />

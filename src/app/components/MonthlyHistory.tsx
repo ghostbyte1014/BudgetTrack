@@ -21,7 +21,7 @@ export function MonthlyHistory() {
 
   // Create a synthetic "Live" record for the current month
   const currentMonthStr = format(new Date(), 'yyyy-MM');
-  const liveRecord = {
+  const liveRecord: any = {
     month: currentMonthStr,
     baseBalance: baseBalance,
     carryOver: carryOverFromLastMonth,
@@ -29,6 +29,7 @@ export function MonthlyHistory() {
     totalExpenses: totalSpentThisMonth,
     fixedCosts: totalFixedCosts,
     netResult: currentMonthPool,
+    disciplineScore: budgetDisciplineScore,
     transactions: transactions.filter(t => t.date.startsWith(currentMonthStr)),
     isLive: true
   };
@@ -101,7 +102,7 @@ export function MonthlyHistory() {
                           {(record as any).isLive ? 'Real-time ' : ''}{isPositive ? 'Surplus' : 'Deficit'}
                         </Badge>
                       </div>
-                      {index === 0 && (
+                      {index >= 0 && (
                         <div className="mt-4 flex items-center justify-between p-3 bg-zinc-900/50 rounded-lg border border-zinc-800">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
@@ -109,14 +110,16 @@ export function MonthlyHistory() {
                             </div>
                             <div>
                               <p className="text-xs text-zinc-400 font-medium uppercase tracking-wider">Discipline Score</p>
-                              <p className="text-xl font-bold text-white">{budgetDisciplineScore} / 100</p>
+                              <p className="text-xl font-bold text-white">
+                                {record.disciplineScore ?? 'N/A'}
+                              </p>
                             </div>
                           </div>
                           <div className="flex-1 max-w-[150px] ml-4">
                             <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden">
                               <div
                                 className="h-full bg-blue-500 transition-all duration-1000"
-                                style={{ width: `${budgetDisciplineScore}%` }}
+                                style={{ width: `${record.disciplineScore ?? 0}%` }}
                               />
                             </div>
                           </div>
@@ -215,24 +218,24 @@ export function MonthlyHistory() {
                       <div className="mt-6 pt-4 border-t border-zinc-800">
                         <div className="flex items-center justify-between text-xs text-zinc-500 mb-2">
                           <span>Budget Utilization</span>
-                          <span>{(((record.totalExpenses + (record.fixedCosts || totalFixedCosts)) / inputTotal) * 100).toFixed(1)}%</span>
+                          <span>{(((record.totalExpenses + (record.fixedCosts || 0)) / inputTotal) * 100).toFixed(1)}%</span>
                         </div>
                         <div className="w-full bg-zinc-800 rounded-full h-3 overflow-hidden flex">
                           {/* Fixed Costs - Orange */}
                           <div
                             className="h-full bg-orange-500 transition-all duration-500"
-                            style={{ width: `${Math.min(((record.fixedCosts || totalFixedCosts) / inputTotal) * 100, 100)}%` }}
+                            style={{ width: `${Math.min(((record.fixedCosts || 0) / inputTotal) * 100, 100)}%` }}
                           />
                           {/* Expenses - Red */}
                           <div
                             className="h-full bg-rose-500 transition-all duration-500"
-                            style={{ width: `${Math.min((record.totalExpenses / inputTotal) * 100, Math.max(0, 100 - ((record.fixedCosts || totalFixedCosts) / inputTotal) * 100))}%` }}
+                            style={{ width: `${Math.min((record.totalExpenses / inputTotal) * 100, Math.max(0, 100 - ((record.fixedCosts || 0) / inputTotal) * 100))}%` }}
                           />
                           {/* Balance - Green */}
                           {isPositive && (
                             <div
                               className="h-full bg-emerald-500 transition-all duration-500"
-                              style={{ width: `${Math.max(0, 100 - (((record.totalExpenses + (record.fixedCosts || totalFixedCosts)) / inputTotal) * 100))}%` }}
+                              style={{ width: `${Math.max(0, 100 - (((record.totalExpenses + (record.fixedCosts || 0)) / inputTotal) * 100))}%` }}
                             />
                           )}
                         </div>
