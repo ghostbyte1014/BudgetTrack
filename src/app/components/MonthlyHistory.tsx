@@ -45,9 +45,11 @@ export function MonthlyHistory() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-2">The Bridge</h1>
-        <p className="text-zinc-400">Your financial journey month by month</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">The Bridge</h1>
+          <p className="text-zinc-400">Your financial journey month by month</p>
+        </div>
       </div>
 
       {/* Timeline */}
@@ -78,8 +80,8 @@ export function MonthlyHistory() {
                 <div key={record.month} className="relative pl-16 md:pl-20">
                   {/* Timeline dot */}
                   <div className={`absolute left-4 md:left-6 w-5 h-5 rounded-full border-4 ${isPositive
-                      ? 'bg-emerald-500 border-emerald-500/30'
-                      : 'bg-rose-500 border-rose-500/30'
+                    ? 'bg-emerald-500 border-emerald-500/30'
+                    : 'bg-rose-500 border-rose-500/30'
                     }`} />
 
                   <Card className="bg-[#18181b] border-zinc-800 hover:border-zinc-700 transition-colors">
@@ -193,7 +195,7 @@ export function MonthlyHistory() {
                                 </span>
                               </div>
                             )}
-                            
+
 
 
                             <div className="flex justify-between text-sm">

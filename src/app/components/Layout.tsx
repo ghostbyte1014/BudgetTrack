@@ -11,7 +11,8 @@ import {
   X,
   HelpCircle,
   User,
-  Bell
+  Bell,
+  FileText
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useState, useEffect } from 'react';
@@ -25,6 +26,7 @@ const navigation = [
   { name: 'The Forecast', href: '/analytics', icon: TrendingUp },
   { name: 'Notifications', href: '/notifications', icon: Bell },
   { name: 'How It Works', href: '/how-it-works', icon: HelpCircle },
+  { name: 'Reports', href: '/reports', icon: FileText },
   { name: 'Profile', href: '/profile', icon: User },
 ];
 

@@ -9,6 +9,7 @@ import { Analytics } from './components/Analytics';
 import { HowItWorks } from './components/HowItWorks';
 import { ProfilePage } from './components/ProfilePage';
 import { NotificationsPage } from './components/NotificationsPage';
+import { ReportsPage } from './components/ReportsPage';
 
 export const router = createBrowserRouter([
   {
@@ -46,6 +47,10 @@ export const router = createBrowserRouter([
       {
         path: 'profile',
         Component: ProfilePage,
+      },
+      {
+        path: 'reports',
+        Component: ReportsPage,
       },
       {
         path: 'notifications',

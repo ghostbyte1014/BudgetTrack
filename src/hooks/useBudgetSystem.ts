@@ -53,7 +53,7 @@ export function useBudgetSystem() {
     };
   }, []);
 
-  // 2. Fetch Core Engine Data
+  // 2. Fetch Core Engine Data & Release Notes
   const fetchData = useCallback(async () => {
     if (!userId) {
       setIsLoading(false);
@@ -71,6 +71,37 @@ export function useBudgetSystem() {
       if (!countError && count !== null) {
         setUnreadCount(count);
       }
+
+      // Check for predefined release notes
+      try {
+        const response = await fetch('/release-notes.json', { cache: 'no-store' });
+        if (response.ok) {
+          const notes = await response.json();
+          const lastSeenVersion = localStorage.getItem('budgettrack_last_version');
+          
+          if (notes.version && notes.version !== lastSeenVersion) {
+            // New version detected!
+            const newNotif = {
+              title: notes.title || `Update v${notes.version}`,
+              message: notes.message || 'The system has been updated.',
+              type: 'info' as const,
+              user_id: userId,
+            };
+
+            // 1. Insert into persistent inbox
+            await supabase.from('notifications').insert(newNotif);
+            
+            // 2. Mark as seen in local storage so it doesn't loop
+            localStorage.setItem('budgettrack_last_version', notes.version);
+            
+            // Note: The realtime subscription will hear the insert and trigger the toast automatically,
+            // so we don't need to manually trigger triggerNotificationToast here!
+          }
+        }
+      } catch (releaseErr) {
+        console.error('Failed to check release notes:', releaseErr);
+      }
+
     } catch (error) {
       console.error("Error fetching budget architecture:", error);
     } finally {
