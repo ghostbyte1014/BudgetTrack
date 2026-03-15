@@ -13,6 +13,10 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      workbox: {
+        // Raise the precache size limit to 5 MiB to handle the heavy bundles
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+      },
       manifest: {
         name: 'BudgetFlow',
         short_name: 'BudgetFlow',
@@ -59,6 +63,18 @@ export default defineConfig({
     alias: {
       // Alias @ to the src directory
       '@': path.resolve(__dirname, './src'),
+    },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split the heavy PDF renderer into its own chunk
+          'pdf-renderer': ['@react-pdf/renderer'],
+          // Split MUI into its own chunk
+          'mui': ['@mui/material', '@mui/icons-material'],
+        },
+      },
     },
   },
 
