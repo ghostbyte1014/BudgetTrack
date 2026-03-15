@@ -40,7 +40,7 @@ export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
       if (user) {
         await supabase.from('profiles').update({ 
           base_balance: amount, 
-          primary_goal: goal 
+          primary_goal: goal
         }).eq('id', user.id);
       }
 

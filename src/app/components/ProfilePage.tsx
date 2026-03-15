@@ -7,6 +7,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { User, Wallet, Target, Loader2, Save, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
+import { CURRENCIES, getFormattedCurrency } from '../constants/currencies';
 
 export function ProfilePage() {
   const { user, login, baseBalance, setBaseBalance, currencySymbol, setCurrencySymbol, primaryGoal, setPrimaryGoal } = useBudget();
@@ -156,11 +157,11 @@ export function ProfilePage() {
                   className="w-full h-10 px-3 bg-[#09090b] border border-zinc-700 text-white rounded-md text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   required
                 >
-                  <option value="$">$ (Dollar)</option>
-                  <option value="₱">₱ (Peso)</option>
-                  <option value="€">€ (Euro)</option>
-                  <option value="£">£ (Pound)</option>
-                  <option value="¥">¥ (Yen)</option>
+                  {CURRENCIES.map((c) => (
+                    <option key={c.code} value={c.symbol}>
+                      {getFormattedCurrency(c)}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

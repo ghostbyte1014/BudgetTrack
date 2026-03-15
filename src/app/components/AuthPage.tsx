@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Wallet, Loader2 } from 'lucide-react';
 import { WelcomeScreen } from './WelcomeScreen';
 import { supabase } from '../../lib/supabase';
+import { CURRENCIES, getFormattedCurrency } from '../constants/currencies';
 
 export function AuthPage() {
   const navigate = useNavigate();
@@ -36,13 +37,13 @@ export function AuthPage() {
           password
         });
         if (error) throw error;
-        
+
         login(data.user?.user_metadata?.name || 'User', email, data.user?.id);
         navigate('/dashboard');
       } else {
         // Sign Up
         if (!name) throw new Error('First name is required for registration.');
-        
+
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -56,7 +57,7 @@ export function AuthPage() {
           }
         });
         if (error) throw error;
-        
+
         // Show welcome screen on new signup
         login(name, email, data.user?.id);
         setShowWelcome(true);
@@ -93,8 +94,8 @@ export function AuthPage() {
               {isLogin ? 'Welcome Back' : 'Get Started'}
             </CardTitle>
             <CardDescription className="text-zinc-400">
-              {isLogin 
-                ? 'Sign in to continue managing your finances' 
+              {isLogin
+                ? 'Sign in to continue managing your finances'
                 : 'Create your account to start budgeting'}
             </CardDescription>
           </CardHeader>
@@ -150,11 +151,11 @@ export function AuthPage() {
                       className="w-full h-10 px-3 bg-[#09090b] border border-zinc-700 text-white rounded-md text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                       required={!isLogin}
                     >
-                      <option value="$">$ (Dollar)</option>
-                      <option value="₱">₱ (Peso)</option>
-                      <option value="€">€ (Euro)</option>
-                      <option value="£">£ (Pound)</option>
-                      <option value="¥">¥ (Yen)</option>
+                      {CURRENCIES.map((c) => (
+                        <option key={c.code} value={c.symbol}>
+                          {getFormattedCurrency(c)}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </>
@@ -193,8 +194,8 @@ export function AuthPage() {
                 </div>
               )}
 
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
                 disabled={isLoading}
               >
@@ -211,8 +212,8 @@ export function AuthPage() {
                   }}
                   className="text-sm text-zinc-400 hover:text-zinc-300"
                 >
-                  {isLogin 
-                    ? "Don't have an account? Sign up" 
+                  {isLogin
+                    ? "Don't have an account? Sign up"
                     : 'Already have an account? Sign in'}
                 </button>
               </div>
