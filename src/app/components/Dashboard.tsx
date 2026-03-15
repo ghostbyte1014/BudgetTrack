@@ -205,7 +205,7 @@ export function Dashboard() {
                 <ShieldCheck className="w-5 h-5 text-blue-500" />
               </div>
               <div>
-                <p className="text-xs text-zinc-400 font-medium">Safe Spend Today</p>
+                <p className="text-xs text-zinc-400 font-medium">Real-Time Safe Spend</p>
                 <div className="flex items-center gap-2">
                   <p className="text-xl font-bold text-white">{currencySymbol}{safeSpendToday.toFixed(2)}</p>
                   <TooltipProvider>
@@ -214,7 +214,7 @@ export function Dashboard() {
                         <Info className="w-3 h-3 text-zinc-500" />
                       </TooltipTrigger>
                       <TooltipContent className="bg-zinc-800 border-zinc-700 text-zinc-300 text-xs max-w-xs">
-                        Accounts for unpaid bills due today and your daily allowance.
+                        Real-time calculation getting the average spendable divided by remaining days when vault is updated.
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>

@@ -381,7 +381,12 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
   const currentRecord = monthlyRecords.find((r: MonthlyRecord) => r.month === currentMonth);
   const carryOverFromLastMonth = currentRecord ? currentRecord.carryOver : 0;
 
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const spentToday = currentMonthTransactions.filter(t => t.date === todayStr && t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+  const incomeToday = currentMonthTransactions.filter(t => t.type === 'income' && t.date === todayStr && !(t as any).is_future_carryover).reduce((sum, t) => sum + t.amount, 0);
+
   const absoluteBalance = baseBalance + carryOverFromLastMonth + totalIncomeThisMonth - totalSpentThisMonth - unpaidFixedCosts;
+  const balanceYesterday = absoluteBalance + spentToday - incomeToday;
   
   const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
   const currentDay = new Date().getDate();
@@ -389,7 +394,7 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
   
   const totalBudgetPool = baseBalance + carryOverFromLastMonth;
   const currentMonthPool = absoluteBalance;
-  const dailySpendable = Math.max(0, absoluteBalance / daysRemaining);
+  const dailySpendable = Math.max(0, balanceYesterday / daysRemaining);
   const currentDeficit = absoluteBalance < 0 ? Math.abs(absoluteBalance) : 0;
 
   // Calculate 5-day projection if no spending occurs starting today
@@ -435,10 +440,7 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
   }
 
   // --- PHASE 2: SAFE SPEND TODAY ---
-  const billsDueToday = fixedCosts
-    .filter(f => f.dueDate === currentDay && !f.isSatisfied)
-    .reduce((sum, f) => sum + f.amount, 0);
-  const safeSpendToday = Math.max(0, dailySpendable - billsDueToday);
+  const safeSpendToday = Math.max(0, absoluteBalance / daysRemaining);
 
   // --- PHASE 3: WEEKLY BURN RATE ---
   const startOfWeek = new Date();
