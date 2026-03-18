@@ -9,8 +9,11 @@ import { Badge } from './ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Switch } from './ui/switch';
-import { Plus, Search, Trash2, TrendingDown, TrendingUp } from 'lucide-react';
+import { Plus, Search, Trash2, TrendingDown, TrendingUp, PlayCircle } from 'lucide-react';
 import { format, differenceInDays, endOfMonth } from 'date-fns';
+import { InfoIcon } from './ui/InfoIcon';
+import { TOOLTIP_CONTENT } from '../constants/tooltipContent';
+import { VaultTutorial } from './VaultTutorial';
 
 const categories = [
   'Groceries',
@@ -118,14 +121,28 @@ export function Transactions() {
 
   return (
     <div className="space-y-6">
+      <VaultTutorial />
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">The Vault</h1>
           <p className="text-zinc-400">All your transactions in one place</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-blue-500 hover:text-blue-400 hover:bg-blue-500/10"
+            onClick={() => {
+              localStorage.removeItem('seen_vault_tutorial');
+              window.location.reload();
+            }}
+          >
+            <PlayCircle className="w-4 h-4 mr-2" />
+            Show Tutorial
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
             <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
               <Plus className="w-4 h-4 mr-2" />
               Add Transaction
@@ -137,8 +154,16 @@ export function Transactions() {
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="type" className="text-zinc-200">Type</Label>
-                <Select 
+                <Label htmlFor="type" className="text-zinc-200 flex items-center gap-2">
+                  Type
+                  <InfoIcon 
+                    content={TOOLTIP_CONTENT.transactionTypes.detailed}
+                    learnMoreLink={TOOLTIP_CONTENT.transactionTypes.learnMoreLink}
+                    variant="default"
+                    trackingId="vault_transaction_type"
+                  />
+                </Label>
+                <Select
                   value={formData.type} 
                   onValueChange={(value: 'expense' | 'income') => 
                     setFormData({ ...formData, type: value })
@@ -271,6 +296,7 @@ export function Transactions() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Filters */}

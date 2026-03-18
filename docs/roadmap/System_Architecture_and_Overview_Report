@@ -1,0 +1,163 @@
+# System Architecture and Overview Report
+**Project Name:** BudgetFlow (BudgetTrack)
+
+## 1. Executive Summary & Purpose
+**Primary Goal:** 
+BudgetFlow is a modern, responsive personal finance Progressive Web App (PWA) designed to utilize a "Smart Carry-Over" budgeting strategy. Instead of resetting finances every 30 days, the system treats budgeting as a continuous journey by automatically carrying over positive or negative balances into the subsequent month using a "Zero-Bound Floor" logic.
+
+**End-Users and Business Value:**
+The primary users are individuals seeking strict yet encouraging financial tracking mechanisms (e.g., users aiming to save more, stop overspending, or track down debt). The business value lies in its proactive intervention; by adapting UI psychological cues based on user goals and enforcing hard spending limits via real-time "Working Capital" tracking, it fosters improved financial habits and sustained user engagement.
+
+## 2. System Structure & Architecture
+**High-Level Architectural Pattern:** 
+The platform operates on a **Thick Frontend / Thin Backend** paradigm within a Serverless Client-Server architecture. Heavily relying on Client-Side computation, the application centralizes complex financial calculations within the React Context API (`BudgetContext.tsx`) to maximize real-time responsiveness and optimistic UI updates.
+
+**Terminology Glossary:**
+To prevent developer confusion regarding the core financial pool, the following terms represent the exact same calculated value:
+*   `Absolute Balance` (Primary term used in UI and logic models)
+*   `Working Capital` (Historical architectural term)
+*   `currentMonthPool` (Literal variable name within `BudgetContext.tsx`)
+
+**Core Modules & Responsibilities:**
+*   **Thick Frontend Client (React/Vite PWA):** Acts as the computational engine and presentation layer. It handles routing, user interactions, heavy state management, and all dynamic behavior calculations (e.g., Daily Spendable, Discipline Score, Runways, 5-Day Projections).
+*   **Thin PostgreSQL Backend (Supabase):** Serves as the persistent raw data store and single source of truth. It manages state via strict tables (e.g., `transactions`, `fixed_costs`) and handles auth, but delegates complex mathematical processing to the frontend client.
+*   **Real-time Event Bridge:** Facilitates immediate interface updates by publishing PostgreSQL database table changes directly to the client via WebSockets (`budget_engine_pulse`).
+
+## 3. Technology Stack & File Structure
+**Frontend:**
+*   **Core:** React.js 18, TypeScript, Vite (bundler with `vite-plugin-pwa` for manifest routing).
+*   **Styling & UI:** TailwindCSS v4, Shadcn/UI (Radix UI primitives), Material UI (MUI & Emotion), Framer Motion / tw-animate-css for micro-interactions.
+*   **Icons & Tooling:** Lucide-React, MUI Icons, React Router 7.
+*   **Forms & Validation:** `react-hook-form` coupled with standard HTML constraint validation.
+*   **PDF Generation:** `@react-pdf/renderer` — native vector PDF engine with registered Roboto font for precise, kerning-free A4 PDF exports.
+
+**Backend & Database:**
+*   **Platform:** Supabase (Backend-as-a-Service integration).
+*   **Database Engine:** PostgreSQL 15+ (with `uuid-ossp` extensions).
+*   **Identity Provisioning:** Supabase Auth component.
+
+**Infrastructure & Integrations:**
+*   **PWA Service Workers:** Native-level cache management for responsive offline states and cross-platform (iOS/Android/Desktop) installation.
+
+### System File Structure
+The absolute majority of the critical application logic lives within the `src/` directory, following a modern, feature-based functional scaling design.
+
+```text
+src/
+├── app/                        # Main Application Layer
+│   ├── App.tsx                 # Root component wrapper (manages Providers and App Layout)
+│   ├── routes.ts               # Centralized React Router 7 page configuration
+│   ├── constants/              # Static configuration and data arrays
+│   │   └── currencies.ts       # Global currency format arrays and symbols
+│   ├── contexts/               # Global state management
+│   │   └── BudgetContext.tsx   # Core Engine: Manages fetching, storing, and mutations across the app
+│   └── components/             # Reusable & Page-Specific Views
+│       ├── Analytics.tsx       # 'The Forecast': Visual charting arrays powered by Recharts
+│       ├── AuthPage.tsx        # Login/Signup handling via Supabase Auth
+│       ├── BudgetProjection.tsx# Visual breakdown of 5-day future targets
+│       ├── DailySummaryModal.tsx # End-of-day spending summary interactive overlay
+│       ├── DailySummaryView.tsx  # Display logic for daily expenditure breakdowns
+│       ├── Dashboard.tsx       # 'The Pulse': Primary visualization of Absolute Balance and Deficits
+│       ├── FixedCosts.tsx      # Management dashboard for recurring subscription and strict bills
+│       ├── HowItWorks.tsx      # System methodology explanations and user guidance
+│       ├── Layout.tsx          # Wrapper shell rendering Sidebars (Desktop) and Bottom Nav (Mobile)
+│       ├── MonthlyHistory.tsx  # 'The Bridge': Read-Only archiving view for prior historical months
+│       ├── NotificationsPage.tsx # User notification inbox (reads Supabase notifications table)
+│       ├── OnboardingTutorial.tsx# 5-Step Contextual Master Tutorial (Z-Index Highlighting)
+│       ├── ProfilePage.tsx     # User settings, manual modifications, goal adjustments
+│       ├── ReportDocument.tsx  # Virtual preview renderer (A4 HTML layout, synced to selected month)
+│       ├── ReportPDF.tsx       # @react-pdf/renderer PDF document definition for binary export
+│       ├── ReportsPage.tsx     # 'The Transcript': Month selection, PDF preview and download controls
+│       ├── SettingsDialog.tsx  # Modal for modifying specific application toggles
+│       ├── Transactions.tsx    # 'The Vault': Core CRUD interface for entering Expenses and Income
+│       ├── VaultTutorial.tsx   # Localized onboarding modal for The Vault page
+│       ├── FixedCostsTutorial.tsx # Localized onboarding modal for the Fixed Costs page
+│       ├── ReportsTutorial.tsx # Localized onboarding modal for the Reports page
+│       ├── WelcomeScreen.tsx   # [BYPASSED] Legacy onboarding flow (Replaced by unified AuthPage)
+│       └── ui/                 # 'Shadcn/UI' raw primitives (Buttons, Cards, Badges, Modals)
+│           └── InfoIcon.tsx    # Pulsing tooltip generator for metric definitions
+├── hooks/                      # Global Custom React Hooks
+│   └── useBudgetSystem.ts      # Engine hook: Auth init, Re-fetching, WebSocket listening, and Release Notification
+├── lib/                        # Utility & Configuration Libraries
+│   └── supabase.ts             # Direct client initialization for the Supabase API wrapper
+├── styles/                     # Global Styling References
+│   ├── fonts.css               # Font face declarations
+│   ├── index.css               # Root cascading styles
+│   ├── tailwind.css            # Tailwind V4 core imports
+│   └── theme.css               # Shadcn/UI CSS Variable tokens (e.g., --primary, --muted)
+├── vite-env.d.ts               # Vite TypeScript environment declarations
+└── main.tsx                    # React Entrypoint: Intercepts DOM, renders StrictMode, and registers PWA workers
+```
+## 4. Core System Flows
+**User Journey:**
+1.  **Authentication:** New users register or log in via the `AuthPage`. Supabase triggers automatically create a default `profiles` entity.
+2.  **The Educational Bridge (Onboarding):** New users trigger `OnboardingTutorial.tsx` upon entry. The UI highlights Daily Spendable bounds. Users also access localized tutorials on Fixed Costs, Transactions, and Reports.
+3.  **Active Management (The Pulse):** Users enter the dashboard and are presented with their "Daily Spendable" allowance.
+4.  **Transaction Entry (The Vault):** Users log expenses/incomes.
+5.  **Historical Reflection (The Bridge):** Automated end-of-month snapshotting bridges carryovers sequentially without user intervention.
+
+**Data Flow:**
+Data is strictly managed via server-side constraint evaluation:
+1.  **Write:** Client dispatches a transaction insert to Supabase.
+2.  **Process:** Database `AFTER INSERT` triggers compute impacts (e.g., matching Fixed Costs via `mark_fixed_cost_paid`, evaluating deficit states via `check_deficit_alert`).
+3.  **Calculate:** The `user_pulse_metrics` view natively recalculates remaining capital.
+4.  **Sync:** Supabase Realtime streams the updated View payload back to the React UI.
+
+**Authentication/Authorization:**
+Supervised by Supabase Auth with **Row Level Security (RLS)** explicitly mapping resource access: `CHECK (auth.uid() = user_id)`.
+
+## 5. Deployment & Infrastructure
+**Hosting Environments:**
+*   **Frontend (Static Gen):** Can be deployed onto edges like Vercel, Netlify, or AWS (S3/CloudFront) using the default Vite build commands.
+*   **Backend:** Hosted inside Supabase's managed Postgres wrapper structure.
+
+**CI/CD Pipelines:**
+Adheres to standard modern Git-based CI/CD routines where pushes to `main` trigger static bundling for the React payload and schema migrations are automatically handled by the Supabase CLI pipeline.
+
+## 6. Security & Error Handling
+**Security Measures:**
+*   **Database Constraints:** Deep implementation of Row Level Security globally prevents user data spillage.
+*   **Security Definer Isolation:** Remote Procedure Calls (RPCs), such as the critical monthly archiver, execute via service roles but require system keys, preventing malicious direct API triggering.
+
+**Error Handling & Monitoring:**
+*   **Deficit Alarms:** The internal `notifications` table systematically creates an alert payload when spending eclipses the "Zero-Bound Floor."
+*   **Client Graceful Degradation:** Forms and inputs leverage structured error boundaries (`react-hook-form` / `sonner` toasts) to ensure safe user handling.
+*   **Release Notifications:** `useBudgetSystem` fetches `public/release-notes.json` on every app start. If the JSON version differs from `localStorage('budgettrack_last_version')`, the system auto-inserts an `info`-type notification row into every user's Supabase inbox. The Supabase Realtime subscription then immediately surfaces the toast alert to all active sessions.
+
+**Scalability Considerations:**
+Optimized indexing strategy implemented early (e.g., `CREATE INDEX idx_transactions_user_date_type`) limits sequential scans on highly queried paths. Future scaling requires evaluating table partitioning exclusively on the `monthly_records` and `transactions` tables as the aggregate dataset bloats over multiple calendar years.
+
+---
+
+### Core Architecture Visualization
+
+```mermaid
+graph TD
+    subgraph Frontend "React PWA (Thin Client)"
+        UI[User Interface / Dashboards]
+        State[Local React State]
+    end
+
+    subgraph Supabase "Supabase Backend Engine"
+        Auth{Supabase Auth}
+        RT[Realtime WebSocket Sync]
+    end
+
+    subgraph Database "PostgreSQL (Thick Backend)"
+        Tables[(Core Tables: Profiles, Transactions)]
+        Triggers[[Event Triggers]]
+        Views[[user_pulse_metrics VIEW]]
+        RPC[[Monthly Bridge RPC]]
+    end
+
+    UI -->|1. Sign in| Auth
+    Auth -->|2. Validates & Provisions| Tables
+    UI -->|3. Submits Transaction| Tables
+    Tables -->|4. Fires After Insert| Triggers
+    Triggers -->|5. Computes Logic| Views
+    Views -.->|6. Push Data Deltas| RT
+    RT -.->|7. Renders Updates| State
+    State --> UI
+    RPC -->|Automated CRON| Tables
+```
+

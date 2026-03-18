@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useState, useEffect } from 'react';
+import { OnboardingTutorial } from './OnboardingTutorial';
 
 
 const navigation = [
@@ -56,6 +57,7 @@ export function Layout() {
 
   return (
     <div className="min-h-screen bg-[#09090b]">
+      <OnboardingTutorial />
       {/* Desktop Sidebar */}
       <div className="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col">
         <div className="flex flex-col flex-grow bg-[#18181b] border-r border-zinc-800">

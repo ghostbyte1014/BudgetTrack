@@ -8,7 +8,10 @@ import { Label } from './ui/label';
 import { Badge } from './ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Plus, Trash2, Lock, Calendar, Clock } from 'lucide-react';
+import { Plus, Trash2, Lock, Calendar, Clock, PlayCircle } from 'lucide-react';
+import { InfoIcon } from './ui/InfoIcon';
+import { TOOLTIP_CONTENT } from '../constants/tooltipContent';
+import { FixedCostsTutorial } from './FixedCostsTutorial';
 
 const categories = [
   'Rent/Mortgage',
@@ -54,14 +57,28 @@ export function FixedCosts() {
 
   return (
     <div className="space-y-6">
+      <FixedCostsTutorial />
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Fixed Costs Manager</h1>
           <p className="text-zinc-400">Allocate and reserve your recurring bills and subscriptions</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-orange-500 hover:text-orange-400 hover:bg-orange-500/10 border border-orange-500/20"
+            onClick={() => {
+              localStorage.removeItem('seen_fixed_costs_tutorial');
+              window.location.reload();
+            }}
+          >
+            <PlayCircle className="w-4 h-4 mr-2" />
+            Show Tutorial
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
             <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
               <Plus className="w-4 h-4 mr-2" />
               Add Fixed Cost
@@ -140,14 +157,22 @@ export function FixedCosts() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Summary Card */}
       <Card className="bg-gradient-to-br from-orange-900/20 to-orange-800/20 border-orange-700/50">
         <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
+          <CardTitle className="text-white flex items-center gap-2" data-onboarding="fixed-costs-allocation">
             <Lock className="w-5 h-5 text-orange-500" />
             Reserved Budget Allocation
+            <InfoIcon 
+              content={TOOLTIP_CONTENT.reservedAllocation.detailed}
+              learnMoreLink={TOOLTIP_CONTENT.reservedAllocation.learnMoreLink}
+              variant="default"
+              trackingId="fixed_costs_allocation"
+              side="bottom"
+            />
           </CardTitle>
           <CardDescription className="text-zinc-400">
             These amounts are automatically deducted from your monthly pool

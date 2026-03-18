@@ -2,9 +2,10 @@ import React, { useState, useRef, useMemo } from 'react';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Checkbox } from './ui/checkbox';
-import { FileText, Download, Loader2 } from 'lucide-react';
+import { FileText, Download, Loader2, PlayCircle } from 'lucide-react';
 import { ReportDocument } from './ReportDocument';
 import { ReportPDF } from './ReportPDF';
+import { ReportsTutorial } from './ReportsTutorial';
 import { pdf } from '@react-pdf/renderer';
 import { toast } from 'sonner';
 import { useBudget } from '../contexts/BudgetContext';
@@ -168,9 +169,24 @@ export function ReportsPage() {
 
   return (
     <div className="space-y-6 flex-1 min-h-0 flex flex-col h-[calc(100vh-8rem)]">
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Reports &amp; Exports</h1>
-        <p className="text-zinc-400">Configure and download your comprehensive financial transcripts.</p>
+      <ReportsTutorial />
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Reports &amp; Exports</h1>
+          <p className="text-zinc-400">Configure and download your comprehensive financial transcripts.</p>
+        </div>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10"
+          onClick={() => {
+            localStorage.removeItem('seen_reports_tutorial');
+            window.location.reload();
+          }}
+        >
+          <PlayCircle className="w-4 h-4 mr-2" />
+          Show Tutorial
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 flex-1 min-h-0">
@@ -182,7 +198,7 @@ export function ReportsPage() {
             <div className="space-y-4 pt-2 border-b border-zinc-800 pb-6">
               <Label className="text-zinc-300 font-medium tracking-wide text-xs uppercase mb-1 drop-shadow-sm">Export Month</Label>
               <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                <SelectTrigger className="w-full bg-[#09090b] border-zinc-800 h-11 transition-all duration-200">
+                <SelectTrigger data-onboarding="export-month-select" className="w-full bg-[#09090b] border-zinc-800 h-11 transition-all duration-200">
                   <SelectValue placeholder="Select month" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#18181b] border-zinc-800">

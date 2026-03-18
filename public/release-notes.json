@@ -1,6 +1,6 @@
 {
-  "version": "2.4.1",
-  "title": "System Update: Reporting Engine v2.5",
-  "message": "Added PDF Export Month Selection, Custom Dropdowns, and Dynamic Historical Data Syncing across Preview and Export.",
-  "date": "2026-03-15"
+  "version": "3.1.1",
+  "title": "System Update: The Educational Bridge v3.1.1",
+  "message": "Complete rollout of the new Contextual Onboarding System, featuring interactive tutorials, progressive metrics disclosure, and dynamic help tooltips.",
+  "date": "2026-03-18"
 }

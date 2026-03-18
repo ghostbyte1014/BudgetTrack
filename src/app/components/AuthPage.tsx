@@ -58,7 +58,8 @@ export function AuthPage() {
         });
         if (error) throw error;
 
-        // Show welcome screen on new signup
+        // Show welcome screen and set onboarding timestamp on new signup
+        localStorage.setItem('signup_timestamp', Date.now().toString());
         login(name, email, data.user?.id);
         setShowWelcome(true);
       }

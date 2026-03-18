@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { TrendingUp, Calendar, DollarSign, Lock, Calculator, Zap } from 'lucide-react';
+import { Button } from './ui/button';
+import { TrendingUp, Calendar, DollarSign, Lock, Calculator, Zap, ShieldCheck, Activity, Target, RotateCcw } from 'lucide-react';
 
 export function HowItWorks() {
   return (
@@ -11,6 +12,7 @@ export function HowItWorks() {
       </div>
 
       {/* The Carry-Over Engine */}
+      <section id="bridge" className="scroll-mt-24">
       <Card className="bg-gradient-to-br from-emerald-900/20 to-emerald-800/20 border-emerald-700/50">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
@@ -73,8 +75,10 @@ export function HowItWorks() {
           </div>
         </CardContent>
       </Card>
+      </section>
 
       {/* Daily Allowance Formula */}
+      <section id="daily-spendable" className="scroll-mt-24">
       <Card className="bg-[#18181b] border-zinc-800">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
@@ -128,6 +132,7 @@ export function HowItWorks() {
           </div>
         </CardContent>
       </Card>
+      </section>
 
       {/* The "No Spend" Benefit logic */}
       <Card className="bg-gradient-to-br from-emerald-900/20 to-emerald-800/20 border-emerald-700/50">
@@ -189,6 +194,76 @@ export function HowItWorks() {
         </CardContent>
       </Card>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        {/* Real-Time Safe Spend */}
+        <section id="safe-spend" className="scroll-mt-24 h-full">
+          <Card className="bg-[#18181b] border-zinc-800 h-full">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-blue-500" />
+                Real-Time Safe Spend
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-zinc-400 text-sm">
+                While your Daily Spendable is a fixed target for the day, your Safe Spend is the live reality. It divides your exact current absolute balance by the days remaining. If you make a purchase, this number drops instantly.
+              </p>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Financial Runway */}
+        <section id="runway" className="scroll-mt-24 h-full">
+          <Card className="bg-[#18181b] border-zinc-800 h-full">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-orange-500" />
+                Financial Runway
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-zinc-400 text-sm">
+                Your runway calculates how many days you can survive at your current average spending velocity before your account hits $0. A runway of 30+ days means you are perfectly sustainable.
+              </p>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Spending Pace */}
+        <section id="pacing" className="scroll-mt-24 h-full">
+          <Card className="bg-[#18181b] border-zinc-800 h-full">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Activity className="w-5 h-5 text-emerald-500" />
+                Spending Pace
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-zinc-400 text-sm">
+                Compares today's actual spending against your Daily Spendable target. A multiplier below 1.0x means you are saving money. Above 1.0x means you are burning through your budget too fast today.
+              </p>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Discipline Score */}
+        <section id="discipline-score" className="scroll-mt-24 h-full">
+          <Card className="bg-[#18181b] border-zinc-800 h-full">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Target className="w-5 h-5 text-purple-500" />
+                Discipline Score
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-zinc-400 text-sm">
+                A 0-100 score analyzing your financial health. You lose points for entering a deficit or overspending your total pool, but you can build a buffer (+10 points) by paying your fixed costs reliably.
+              </p>
+            </CardContent>
+          </Card>
+        </section>
+      </div>
+
       {/* Example Scenario */}
       <Card className="bg-[#18181b] border-zinc-800">
         <CardHeader>
@@ -236,6 +311,24 @@ export function HowItWorks() {
           </div>
         </CardContent>
       </Card>
+
+      <div className="flex justify-center pt-8 pb-4">
+        <Button 
+          variant="outline"
+          className="bg-zinc-900 border-zinc-700 text-zinc-300 hover:text-white"
+          onClick={() => {
+            localStorage.removeItem('completed_onboarding');
+            localStorage.removeItem('skipped_onboarding');
+            localStorage.removeItem('seen_vault_tutorial');
+            localStorage.removeItem('seen_fixed_costs_tutorial');
+            localStorage.setItem('signup_timestamp', Date.now().toString());
+            window.location.href = '/dashboard';
+          }}
+        >
+          <RotateCcw className="w-4 h-4 mr-2" />
+          Replay Interactive Tutorial
+        </Button>
+      </div>
     </div>
   );
 }

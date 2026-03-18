@@ -147,23 +147,6 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
     if (!user?.id) return;
     setIsLoading(true);
 
-    // Self-Healing Logic: Trigger daily summary generation if yesterday's summary is missing
-    const triggerDailySummary = async () => {
-      const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
-      const { count } = await supabase
-        .from('daily_summary_notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('date', yesterday);
-
-      if (count === 0) {
-        console.log('Yesterday summary missing, triggering generation...');
-        await supabase.rpc('generate_daily_summaries');
-      }
-    };
-
-    triggerDailySummary();
-
     try {
       const [transRes, costsRes, profileRes, notifRes, recordsRes] = await Promise.all([
         supabase.from('transactions').select('*').eq('user_id', user.id).order('date', { ascending: false }),
@@ -246,9 +229,86 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(sub); };
+    const handleDemoTransaction = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const { amount, title, type } = customEvent.detail;
+      
+      const demoTransaction: Transaction = {
+        id: `demo-${Date.now()}`,
+        date: format(new Date(), 'yyyy-MM-dd'),
+        title,
+        amount,
+        category: 'Demo',
+        type
+      };
+
+      setTransactions(prev => [demoTransaction, ...prev]);
+
+      // Auto-destruct after 10 seconds
+      setTimeout(() => {
+        setTransactions(prev => prev.filter(t => t.id !== demoTransaction.id));
+      }, 10000);
+    };
+
+    window.addEventListener('demo-transaction', handleDemoTransaction);
+
+    return () => { 
+      supabase.removeChannel(sub); 
+      window.removeEventListener('demo-transaction', handleDemoTransaction);
+    };
   }, [user?.id]);
 
+
+  // --- DAILY SNAPSHOT FRONTEND CHRON JOB ---
+  useEffect(() => {
+    if (!user?.id || isLoading || transactions.length === 0) return;
+
+    const runSnapshotCheck = async () => {
+      const yesterdayDate = subDays(new Date(), 1);
+      const yesterdayStr = format(yesterdayDate, 'yyyy-MM-dd');
+      
+      const { count } = await supabase
+        .from('daily_summary_notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('date', yesterdayStr);
+
+      if (count === 0) {
+        // Generate the snapshot natively to avoid UTC Timezone drift from the backend!
+        const yesterdayTxs = transactions.filter(t => t.date === yesterdayStr && t.type === 'expense');
+        const actualSpent = yesterdayTxs.reduce((sum, t) => sum + t.amount, 0);
+        
+        const dailyTarget = parseFloat(dailySpendable.toFixed(2)); 
+        const surplus = actualSpent <= dailyTarget ? dailyTarget - actualSpent : 0;
+        const deficit = actualSpent > dailyTarget ? actualSpent - dailyTarget : 0;
+        const tip = surplus >= 0 ? "Great job staying under budget!" : "You overshot your target yesterday.";
+
+        const { data: newNotif, error: notifError } = await supabase.from('notifications').insert({
+          user_id: user.id,
+          title: `Daily Summary: ${format(yesterdayDate, 'MMM d')}`,
+          message: `Your financial snapshot for yesterday is ready.`,
+          type: 'summary'
+        }).select().single();
+
+        if (!notifError && newNotif) {
+          await supabase.from('daily_summary_notifications').insert({
+            notification_id: newNotif.id,
+            user_id: user.id,
+            date: yesterdayStr,
+            actual_spent: actualSpent,
+            daily_target: dailyTarget,
+            surplus,
+            deficit,
+            tip
+          });
+          
+          fetchData(); // Instantly refresh the UI badge!
+        }
+      }
+    };
+
+    runSnapshotCheck();
+  }, [user?.id, isLoading]); // Wait until global math stabilizes after load
 
   const login = (name: string, email: string, id?: string) => {
     setUser({ name, email, id });
@@ -398,10 +458,14 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
   const currentDeficit = absoluteBalance < 0 ? Math.abs(absoluteBalance) : 0;
 
   // Calculate 5-day projection if no spending occurs starting today
+  // Phase 1: To prevent the demo transaction from irreparably warping the projection chart during the 10-second tutorial, we calculate a graph-safe balance.
+  const demoSpentTotal = currentMonthTransactions.filter(t => t.id.startsWith('demo-') && t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+  const graphAbsoluteBalance = absoluteBalance + demoSpentTotal;
+  
   const dailySpendableProjection = Array.from({ length: 5 }, (_, i) => {
     const projectedDaysRemaining = daysRemaining - (i + 1);
     if (projectedDaysRemaining < 1) return 0;
-    return Math.max(0, absoluteBalance / projectedDaysRemaining);
+    return Math.max(0, graphAbsoluteBalance / projectedDaysRemaining);
   });
 
   const projectedCarryOver = currentMonthPool;

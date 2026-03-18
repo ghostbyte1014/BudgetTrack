@@ -2,11 +2,13 @@ import { useBudget } from '../contexts/BudgetContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Progress } from './ui/progress';
 import { Badge } from './ui/badge';
-import { TrendingUp, TrendingDown, DollarSign, Calendar, Zap, Bell, Heart, ShieldCheck, AlertTriangle, Info } from 'lucide-react';
+import { Button } from './ui/button';
+import { TrendingUp, TrendingDown, DollarSign, Calendar, Zap, Bell, Heart, ShieldCheck, AlertTriangle, Info, PlayCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { SettingsDialog } from './SettingsDialog';
 import { BudgetProjection } from './BudgetProjection';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { InfoIcon } from './ui/InfoIcon';
+import { TOOLTIP_CONTENT } from '../constants/tooltipContent';
 
 export function Dashboard() {
   const {
@@ -79,6 +81,20 @@ export function Dashboard() {
           <p className="text-zinc-400">{format(new Date(), 'MMMM d, yyyy')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-blue-500 hover:text-blue-400 hover:bg-blue-500/10"
+            onClick={() => {
+              localStorage.removeItem('completed_onboarding');
+              localStorage.removeItem('skipped_onboarding');
+              localStorage.setItem('signup_timestamp', Date.now().toString());
+              window.location.reload();
+            }}
+          >
+            <PlayCircle className="w-4 h-4 mr-2" />
+            Show Tutorial
+          </Button>
           {unreadCount > 0 && (
             <Badge variant="default" className="bg-blue-600 hover:bg-blue-700 text-white animate-pulse flex items-center gap-1">
               <Bell className="w-3 h-3" />
@@ -158,11 +174,19 @@ export function Dashboard() {
       )}
 
       {/* Daily Spendable - Main Gauge */}
-      <Card className={`bg-gradient-to-br border shadow-lg transition-all duration-500 ${goalColors.card}`}>
+      <Card data-onboarding="daily-spendable" className={`bg-gradient-to-br border shadow-lg transition-all duration-500 ${goalColors.card}`}>
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
             <Zap className={`w-5 h-5 ${goalColors.icon}`} />
             Today's Spendable Amount
+            <InfoIcon 
+              content={TOOLTIP_CONTENT.dailySpendable.detailed}
+              learnMoreLink={TOOLTIP_CONTENT.dailySpendable.learnMoreLink}
+              variant="important"
+              trackingId="daily_spendable"
+              pulseOnFirstVisit={true}
+              side="bottom"
+            />
           </CardTitle>
           <CardDescription className="text-zinc-400">
             Adjusted for your goal: {primaryGoal}
@@ -198,26 +222,25 @@ export function Dashboard() {
       {/* Safe Spend Today & Behavioral Logic */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Safe Spend Today */}
-        <Card className="bg-zinc-900/50 border-zinc-800 shadow-sm col-span-1">
+        <Card data-onboarding="safe-spend" className="bg-zinc-900/50 border-zinc-800 shadow-sm col-span-1">
           <CardContent className="py-4 h-full flex flex-col justify-center">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
                 <ShieldCheck className="w-5 h-5 text-blue-500" />
               </div>
               <div>
-                <p className="text-xs text-zinc-400 font-medium">Real-Time Safe Spend</p>
+                <div className="flex items-center">
+                  <p className="text-xs text-zinc-400 font-medium">Real-Time Safe Spend</p>
+                  <InfoIcon 
+                    content={TOOLTIP_CONTENT.realTimeSafeSpend.detailed}
+                    learnMoreLink={TOOLTIP_CONTENT.realTimeSafeSpend.learnMoreLink}
+                    variant="default"
+                    trackingId="safe_spend"
+                    side="top"
+                  />
+                </div>
                 <div className="flex items-center gap-2">
                   <p className="text-xl font-bold text-white">{currencySymbol}{safeSpendToday.toFixed(2)}</p>
-                  <TooltipProvider>
-                    <Tooltip shadow-none>
-                      <TooltipTrigger>
-                        <Info className="w-3 h-3 text-zinc-500" />
-                      </TooltipTrigger>
-                      <TooltipContent className="bg-zinc-800 border-zinc-700 text-zinc-300 text-xs max-w-xs">
-                        Real-time calculation getting the average spendable divided by remaining days when vault is updated.
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
                 </div>
               </div>
             </div>
@@ -232,21 +255,20 @@ export function Dashboard() {
                 <Calendar className="w-5 h-5 text-orange-500" />
               </div>
               <div>
-                <p className="text-xs text-zinc-400 font-medium">Financial Runway</p>
+                <div className="flex items-center">
+                  <p className="text-xs text-zinc-400 font-medium">Financial Runway</p>
+                  <InfoIcon 
+                    content={TOOLTIP_CONTENT.financialRunway.detailed}
+                    learnMoreLink={TOOLTIP_CONTENT.financialRunway.learnMoreLink}
+                    variant="default"
+                    trackingId="runway"
+                    side="top"
+                  />
+                </div>
                 <div className="flex items-center gap-2">
                   <p className="text-xl font-bold text-white">
                     {financialRunway ? `${financialRunway} Days` : 'Infinite'}
                   </p>
-                  <TooltipProvider>
-                    <Tooltip shadow-none>
-                      <TooltipTrigger>
-                        <Info className="w-3 h-3 text-zinc-500" />
-                      </TooltipTrigger>
-                      <TooltipContent className="bg-zinc-800 border-zinc-700 text-zinc-300 text-xs max-w-xs">
-                        How many days your money will last at your current spending pace.
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
                 </div>
               </div>
             </div>
@@ -261,7 +283,16 @@ export function Dashboard() {
                 <Zap className={`w-5 h-5 ${spendingPace.color}`} />
               </div>
               <div>
-                <p className="text-xs text-zinc-400 font-medium">Spending Pace</p>
+                <div className="flex items-center">
+                  <p className="text-xs text-zinc-400 font-medium">Spending Pace</p>
+                  <InfoIcon 
+                    content={TOOLTIP_CONTENT.spendingPace.detailed}
+                    learnMoreLink={TOOLTIP_CONTENT.spendingPace.learnMoreLink}
+                    variant="default"
+                    trackingId="spending_pace"
+                    side="top"
+                  />
+                </div>
                 <div className="flex items-center gap-1">
                   <p className={`text-sm font-bold ${spendingPace.color}`}>
                     {spendingPace.label} ({spendingPace.ratio.toFixed(2)}x)
