@@ -259,56 +259,6 @@ export function BudgetProvider({ children }: { children: React.ReactNode }) {
   }, [user?.id]);
 
 
-  // --- DAILY SNAPSHOT FRONTEND CHRON JOB ---
-  useEffect(() => {
-    if (!user?.id || isLoading || transactions.length === 0) return;
-
-    const runSnapshotCheck = async () => {
-      const yesterdayDate = subDays(new Date(), 1);
-      const yesterdayStr = format(yesterdayDate, 'yyyy-MM-dd');
-      
-      const { count } = await supabase
-        .from('daily_summary_notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('date', yesterdayStr);
-
-      if (count === 0) {
-        // Generate the snapshot natively to avoid UTC Timezone drift from the backend!
-        const yesterdayTxs = transactions.filter(t => t.date === yesterdayStr && t.type === 'expense');
-        const actualSpent = yesterdayTxs.reduce((sum, t) => sum + t.amount, 0);
-        
-        const dailyTarget = parseFloat(dailySpendable.toFixed(2)); 
-        const surplus = actualSpent <= dailyTarget ? dailyTarget - actualSpent : 0;
-        const deficit = actualSpent > dailyTarget ? actualSpent - dailyTarget : 0;
-        const tip = surplus >= 0 ? "Great job staying under budget!" : "You overshot your target yesterday.";
-
-        const { data: newNotif, error: notifError } = await supabase.from('notifications').insert({
-          user_id: user.id,
-          title: `Daily Summary: ${format(yesterdayDate, 'MMM d')}`,
-          message: `Your financial snapshot for yesterday is ready.`,
-          type: 'summary'
-        }).select().single();
-
-        if (!notifError && newNotif) {
-          await supabase.from('daily_summary_notifications').insert({
-            notification_id: newNotif.id,
-            user_id: user.id,
-            date: yesterdayStr,
-            actual_spent: actualSpent,
-            daily_target: dailyTarget,
-            surplus,
-            deficit,
-            tip
-          });
-          
-          fetchData(); // Instantly refresh the UI badge!
-        }
-      }
-    };
-
-    runSnapshotCheck();
-  }, [user?.id, isLoading]); // Wait until global math stabilizes after load
 
   const login = (name: string, email: string, id?: string) => {
     setUser({ name, email, id });
