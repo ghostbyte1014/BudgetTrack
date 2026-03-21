@@ -7,6 +7,7 @@ import { MonthlyHistory } from './components/MonthlyHistory';
 import { FixedCosts } from './components/FixedCosts';
 import { Analytics } from './components/Analytics';
 import { HowItWorks } from './components/HowItWorks';
+import { MarketRun } from './components/MarketRun';
 import { ProfilePage } from './components/ProfilePage';
 import { NotificationsPage } from './components/NotificationsPage';
 import { ReportsPage } from './components/ReportsPage';
@@ -23,6 +24,10 @@ export const router = createBrowserRouter([
       {
         path: 'dashboard',
         Component: Dashboard,
+      },
+      {
+        path: 'market-run',
+        Component: MarketRun,
       },
       {
         path: 'transactions',

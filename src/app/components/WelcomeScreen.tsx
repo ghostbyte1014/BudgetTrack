@@ -6,16 +6,18 @@ import { Label } from './ui/label';
 import { useBudget } from '../contexts/BudgetContext';
 import { supabase } from '../../lib/supabase';
 import { Wallet, TrendingUp, Calendar, Target, Zap, Check } from 'lucide-react';
+import { CURRENCIES, getFormattedCurrency } from '../constants/currencies';
 
 interface WelcomeScreenProps {
   onComplete: () => void;
 }
 
 export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
-  const { setBaseBalance, setPrimaryGoal } = useBudget();
+  const { setBaseBalance, setPrimaryGoal, setCurrencySymbol } = useBudget();
   const [step, setStep] = useState(1);
   const [budget, setBudget] = useState('3000');
   const [goal, setGoal] = useState('Save more');
+  const [currencySymbol, setCurrency] = useState('$');
 
   const goals = [
     { id: 'Save more', title: 'Save more', description: 'Focus on building your savings pool', icon: Target },
@@ -35,12 +37,14 @@ export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
     if (!isNaN(amount) && amount > 0) {
       setBaseBalance(amount);
       setPrimaryGoal(goal);
+      setCurrencySymbol(currencySymbol);
 
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         await supabase.from('profiles').update({ 
           base_balance: amount, 
-          primary_goal: goal
+          primary_goal: goal,
+          currency_symbol: currencySymbol
         }).eq('id', user.id);
       }
 
@@ -110,9 +114,25 @@ export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="budget" className="text-zinc-200">Amount (PHP)</Label>
+                <Label htmlFor="currencySymbol" className="text-zinc-200">Preferred Currency</Label>
+                <select
+                  id="currencySymbol"
+                  value={currencySymbol}
+                  onChange={(e) => setCurrency(e.target.value)}
+                  className="w-full h-10 px-3 bg-[#09090b] border border-zinc-700 text-white rounded-md text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                >
+                  {CURRENCIES.map((c) => (
+                    <option key={c.code} value={c.symbol}>
+                      {getFormattedCurrency(c)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="budget" className="text-zinc-200">Amount</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">₱</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">{currencySymbol}</span>
                   <Input
                     id="budget"
                     type="number"

@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Wallet, Loader2 } from 'lucide-react';
 import { WelcomeScreen } from './WelcomeScreen';
 import { supabase } from '../../lib/supabase';
-import { CURRENCIES, getFormattedCurrency } from '../constants/currencies';
 
 export function AuthPage() {
   const navigate = useNavigate();
@@ -16,9 +15,6 @@ export function AuthPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [baseBalance, setBaseBalance] = useState('3000');
-  const [currencySymbol, setCurrencySymbol] = useState('$');
-  const [primaryGoal, setPrimaryGoal] = useState('Save more');
   const [isLogin, setIsLogin] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -49,10 +45,7 @@ export function AuthPage() {
           password,
           options: {
             data: {
-              name: name,
-              baseBalance: parseFloat(baseBalance) || 3000,
-              primaryGoal: primaryGoal,
-              currencySymbol: currencySymbol
+              name: name
             }
           }
         });
@@ -103,63 +96,18 @@ export function AuthPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="name" className="text-zinc-200">Full Name</Label>
-                    <Input
-                      id="name"
-                      type="text"
-                      placeholder="John Doe"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="bg-[#09090b] border-zinc-700 text-white placeholder:text-zinc-500"
-                      required={!isLogin}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="baseBalance" className="text-zinc-200">Monthly Base Budget ($)</Label>
-                    <Input
-                      id="baseBalance"
-                      type="number"
-                      step="0.01"
-                      placeholder="3000"
-                      value={baseBalance}
-                      onChange={(e) => setBaseBalance(e.target.value)}
-                      className="bg-[#09090b] border-zinc-700 text-white placeholder:text-zinc-500"
-                      required={!isLogin}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="primaryGoal" className="text-zinc-200">Primary Goal</Label>
-                    <select
-                      id="primaryGoal"
-                      value={primaryGoal}
-                      onChange={(e) => setPrimaryGoal(e.target.value)}
-                      className="w-full h-10 px-3 bg-[#09090b] border border-zinc-700 text-white rounded-md text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                      required={!isLogin}
-                    >
-                      <option value="Save more">Save more</option>
-                      <option value="Stop overspending">Stop overspending</option>
-                      <option value="Track debt">Track debt</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="currencySymbol" className="text-zinc-200">Preferred Currency</Label>
-                    <select
-                      id="currencySymbol"
-                      value={currencySymbol}
-                      onChange={(e) => setCurrencySymbol(e.target.value)}
-                      className="w-full h-10 px-3 bg-[#09090b] border border-zinc-700 text-white rounded-md text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                      required={!isLogin}
-                    >
-                      {CURRENCIES.map((c) => (
-                        <option key={c.code} value={c.symbol}>
-                          {getFormattedCurrency(c)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </>
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-zinc-200">Full Name</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="John Doe"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="bg-[#09090b] border-zinc-700 text-white placeholder:text-zinc-500"
+                    required={!isLogin}
+                  />
+                </div>
               )}
 
               <div className="space-y-2">

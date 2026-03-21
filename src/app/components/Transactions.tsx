@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useBudget } from '../contexts/BudgetContext';
+import { useConfirm } from '../contexts/ConfirmContext';
 
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
@@ -37,6 +38,7 @@ export function Transactions() {
     metrics,
     currencySymbol,
   } = useBudget();
+  const { confirm } = useConfirm();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,29 +60,33 @@ export function Transactions() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    addTransaction({
-      title: formData.title,
-      description: formData.description,
-      amount: parseFloat(formData.amount),
-      category: formData.category,
-      type: formData.type,
-      date: formData.date,
-      linked_fixed_cost_id: formData.isFixedCost && formData.fixedCostId !== 'none' ? formData.fixedCostId : undefined,
+    confirm({
+      title: 'Confirm Transaction',
+      message: `Are you sure you want to log this ${formData.type} for ${currencySymbol}${formData.amount}?`,
+      onConfirm: () => {
+        addTransaction({
+          title: formData.title,
+          description: formData.description,
+          amount: parseFloat(formData.amount),
+          category: formData.category,
+          type: formData.type,
+          date: formData.date,
+          linked_fixed_cost_id: formData.isFixedCost && formData.fixedCostId !== 'none' ? formData.fixedCostId : undefined,
+        });
+        
+        setFormData({
+          title: '',
+          description: '',
+          amount: '',
+          category: 'Other',
+          type: 'expense',
+          date: format(new Date(), 'yyyy-MM-dd'),
+          isFixedCost: false,
+          fixedCostId: 'none',
+        });
+        setIsDialogOpen(false);
+      }
     });
-    
-    // Auto-satisfaction is handled by PostgreSQL trigger mark_fixed_cost_paid
-
-    setFormData({
-      title: '',
-      description: '',
-      amount: '',
-      category: 'Other',
-      type: 'expense',
-      date: format(new Date(), 'yyyy-MM-dd'),
-      isFixedCost: false,
-      fixedCostId: 'none',
-    });
-    setIsDialogOpen(false);
   };
 
   // Calculate daily impact for each transaction
@@ -419,7 +425,15 @@ export function Transactions() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => deleteTransaction(transaction.id)}
+                            onClick={() => {
+                              confirm({
+                                title: 'Delete Transaction',
+                                message: 'Are you sure you want to delete this transaction? This cannot be undone.',
+                                danger: true,
+                                confirmText: 'Delete',
+                                onConfirm: () => deleteTransaction(transaction.id)
+                              });
+                            }}
                             className="text-zinc-400 hover:text-rose-500"
                           >
                             <Trash2 className="w-4 h-4" />

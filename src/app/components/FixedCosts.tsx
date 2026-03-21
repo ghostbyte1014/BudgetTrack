@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useBudget } from '../contexts/BudgetContext';
+import { useConfirm } from '../contexts/ConfirmContext';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Button } from './ui/button';
@@ -25,6 +26,7 @@ const categories = [
 
 export function FixedCosts() {
   const { fixedCosts, addFixedCost, deleteFixedCost, totalFixedCosts, metrics, currencySymbol } = useBudget();
+  const { confirm } = useConfirm();
   
   const currentMonthPool = metrics ? metrics.absolute_balance + totalFixedCosts : 0;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -37,19 +39,25 @@ export function FixedCosts() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    addFixedCost({
-      name: formData.name,
-      amount: parseFloat(formData.amount),
-      dueDate: parseInt(formData.dueDate),
-      category: formData.category,
+    confirm({
+      title: 'Confirm Fixed Cost',
+      message: `Are you sure you want to add this ${formData.category} fixed cost for ${currencySymbol}${formData.amount}?`,
+      onConfirm: () => {
+        addFixedCost({
+          name: formData.name,
+          amount: parseFloat(formData.amount),
+          dueDate: parseInt(formData.dueDate),
+          category: formData.category,
+        });
+        setFormData({
+          name: '',
+          amount: '',
+          dueDate: '1',
+          category: 'Subscriptions',
+        });
+        setIsDialogOpen(false);
+      }
     });
-    setFormData({
-      name: '',
-      amount: '',
-      dueDate: '1',
-      category: 'Subscriptions',
-    });
-    setIsDialogOpen(false);
   };
 
   const remainingBudget = currentMonthPool - totalFixedCosts;
@@ -277,7 +285,15 @@ export function FixedCosts() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => deleteFixedCost(cost.id)}
+                        onClick={() => {
+                          confirm({
+                            title: 'Delete Fixed Cost',
+                            message: 'Are you sure you want to delete this fixed cost? This cannot be undone.',
+                            danger: true,
+                            confirmText: 'Delete',
+                            onConfirm: () => deleteFixedCost(cost.id)
+                          });
+                        }}
                         className="text-zinc-400 hover:text-rose-500 h-8 w-8 p-0"
                       >
                         <Trash2 className="w-4 h-4" />

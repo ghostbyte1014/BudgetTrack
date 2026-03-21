@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useBudget } from '../contexts/BudgetContext';
+import { useConfirm } from '../contexts/ConfirmContext';
 import { supabase } from '../../lib/supabase';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -8,18 +9,25 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Settings } from 'lucide-react';
 
 export function SettingsDialog() {
-  const { user, baseBalance, setBaseBalance } = useBudget();
+  const { user, baseBalance, setBaseBalance, currencySymbol } = useBudget();
+  const { confirm } = useConfirm();
   const [isOpen, setIsOpen] = useState(false);
   const [newBalance, setNewBalance] = useState(baseBalance.toString());
 
   const handleSave = async () => {
     const amount = parseFloat(newBalance);
     if (!isNaN(amount) && amount > 0) {
-      setBaseBalance(amount);
-      if (user?.id) {
-        await supabase.from('profiles').update({ base_balance: amount }).eq('id', user.id);
-      }
-      setIsOpen(false);
+      confirm({
+        title: 'Update Budget',
+        message: `Are you sure you want to change your monthly base budget to ${currencySymbol}${amount}?`,
+        onConfirm: async () => {
+          setBaseBalance(amount);
+          if (user?.id) {
+            await supabase.from('profiles').update({ base_balance: amount }).eq('id', user.id);
+          }
+          setIsOpen(false);
+        }
+      });
     }
   };
 

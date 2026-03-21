@@ -12,15 +12,16 @@ import {
   HelpCircle,
   User,
   Bell,
-  FileText
+  FileText,
+  ShoppingCart
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useState, useEffect } from 'react';
 import { OnboardingTutorial } from './OnboardingTutorial';
-
-
+import { toast } from 'sonner';
 const navigation = [
   { name: 'The Pulse', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Market Run', href: '/market-run', icon: ShoppingCart },
   { name: 'The Vault', href: '/transactions', icon: Receipt },
   { name: 'The Bridge', href: '/history', icon: Calendar },
   { name: 'Fixed Costs', href: '/fixed-costs', icon: CreditCard },
@@ -84,7 +85,13 @@ export function Layout() {
               return (
                 <Link
                   key={item.name}
-                  to={item.href}
+                  to={item.href === '/market-run' ? '#' : item.href}
+                  onClick={(e) => {
+                    if (item.href === '/market-run') {
+                      e.preventDefault();
+                      toast.info('Market Run is currently in development for v4.0.0. A system notification will be issued upon deployment.', { icon: '🚧' });
+                    }
+                  }}
                   className={`
                     flex items-center justify-between px-4 py-3 text-sm rounded-lg transition-colors
                     ${isActive 
@@ -149,8 +156,16 @@ export function Layout() {
               return (
                 <Link
                   key={item.name}
-                  to={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
+                  to={item.href === '/market-run' ? '#' : item.href}
+                  onClick={(e) => {
+                    if (item.href === '/market-run') {
+                      e.preventDefault();
+                      setMobileMenuOpen(false);
+                      toast.info('Market Run is currently in development for v4.0.0. A system notification will be issued upon deployment.', { icon: '🚧' });
+                    } else {
+                      setMobileMenuOpen(false);
+                    }
+                  }}
                   className={`
                     flex items-center justify-between px-4 py-3 text-sm rounded-lg transition-colors
                     ${isActive 
@@ -190,7 +205,13 @@ export function Layout() {
             return (
               <Link
                 key={item.name}
-                to={item.href}
+                to={item.href === '/market-run' ? '#' : item.href}
+                onClick={(e) => {
+                  if (item.href === '/market-run') {
+                    e.preventDefault();
+                    toast.info('Market Run is currently in development for v4.0.0. A system notification will be issued upon deployment.', { icon: '🚧' });
+                  }
+                }}
                 className={`flex flex-col items-center justify-center flex-1 h-full relative ${
                   isActive ? 'text-emerald-500' : 'text-zinc-400'
                 }`}
